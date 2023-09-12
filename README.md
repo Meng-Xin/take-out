@@ -2,7 +2,40 @@
 > 如果你是一个Java程序员不知道在Golang中如何进行Web开发，那么你或许可以参考该项目进行实践。
 > 该项目已经提供了一个初始的项目架构其思想和Java中的面向接口开发一致，但Golang中并没有SpringBoot那样
 > 强大的功能例如便捷的BeanUtils.Copy……。
->
+
+## 功能模块介绍
+
+### 管理端
+
+餐饮企业内部员工使用。 主要功能有：
+
+| 模块      | 描述                                                         |
+| --------- | ------------------------------------------------------------ |
+| 登录/退出 | 内部员工必须登录后，才可以访问系统管理后台                   |
+| 员工管理  | 管理员可以在系统后台对员工信息进行管理，包含查询、新增、编辑、禁用等功能 |
+| 分类管理  | 主要对当前餐厅经营的 菜品分类 或 套餐分类 进行管理维护， 包含查询、新增、修改、删除等 |
+| 菜品管理  | 主要维护各个分类下的菜品信息，包含查询、新增、修改、删除、启售、停售等功能 |
+| 套餐管理  | 主要维护当前餐厅中的套餐信息，包含查询、新增、修改、删除、启售、停售等功能 |
+| 订单管理  | 主要维护用户在移动端下的订单信息，包含查询、取消、派送、完成，以及订单报表下载等功能 |
+| 数据统计  | 主要完成对餐厅的各类数据统计，如营业额、用户数量、订单等     |
+
+### 用户端
+
+| 模块        | 描述                                                         |
+| ----------- | ------------------------------------------------------------ |
+| 登录/退出   | 对接微信小程序开放API接口实现微信授权登录。                  |
+| 点餐-菜单   | 可在点餐界面选择 菜品分类\|套餐分类，并根据当前选择的分类加载其中的菜品信息，供用户查询选择 |
+| 点餐-购物车 | 用户选中的菜品就会加入用户的购物车，主要包含 查询购物车、加入购物车、删除购物车、清空购物车等功能 |
+| 订单支付    | 用户选完菜品/套餐后，可以对购物车菜品进行结算支付，这时就需要进行订单的支付 |
+| 个人信息    | 用户个人信息界面提供历史订单和收货地址管理，可查看历史订单信息或使用再来一单功能，收货地址可设置默认地址、新增地址、修改地址、删除地址等功能。 |
+
+**技术栈介绍**
+
++ `Gin`：Gin 是一个用 Go (Golang) 编写的轻量级 HTTP Web 框架，使用责任链模式对中间件加载进行，并且内部封装Sync.Pool、RouterGroup等多种强大的内部组件，是一个较为流行的框架，但开放度太高，容易导致一个人一个开发风格。` go get github.com/gin-gonic/gin`
++ Gorm：是使用较多的一个Object Relational Mapping：对象关系映射。`go get gorm.io/gorm`
++ go-redis：Golang中操作Redis的库 `go get github.com/go-redis/redis`
++ go-jwt： Golang中使用Jwt认证的库 `go get github.com/golang-jwt/jwt`
++ GoCron: Golang中使用的定时任务库：`go get github.com/go-co-op/gocron` 
 
 ## 1.Quick Start
 
@@ -27,7 +60,7 @@ go mod tidy
 $ go env -w GO111MODULE=on
 $ go env -w GOPROXY=https://goproxy.cn,direct
 ```
-[README.md](README.md)
+
 **运行环境**
 
 + MySQL
@@ -82,7 +115,15 @@ main.go #入口函数，项目启动从main函数开始。
 ```
 ---
 **流程实现图**
-![内部架构图](https://cdn.learnku.com/uploads/images/202308/04/97585/feB1ylGNUp.png!large)
+![流程实现图](http://xiaoxiangzhu.oss-cn-beijing.aliyuncs.com/doc/%E9%A1%B9%E7%9B%AE%E6%A8%A1%E5%9E%8B%E5%9B%BE.png?Expires=1694521058&OSSAccessKeyId=TMP.3KgMRsD9f79Tqf2tebZDBtZLfFLpdPwonmP8vGnEbP35ZmPDiVZQ7Zktqp98WXVybGWnmGWL8NVhdcViaR7jPef3ihUb12&Signature=3ogDbJoNK4kJkrridpskxkRZHLo%3D)
 ---
 **项目架构图**
-![img.png](img.png)
+![项目架构图](http://xiaoxiangzhu.oss-cn-beijing.aliyuncs.com/doc/%E6%9E%B6%E6%9E%84%E5%9B%BE.png?Expires=1694521141&OSSAccessKeyId=TMP.3KgMRsD9f79Tqf2tebZDBtZLfFLpdPwonmP8vGnEbP35ZmPDiVZQ7Zktqp98WXVybGWnmGWL8NVhdcViaR7jPef3ihUb12&Signature=zkMxjUe8IJGMox4NbXI9id5tWSM%3D)
+---
+**参考实现**
+![工作台](http://xiaoxiangzhu.oss-cn-beijing.aliyuncs.com/doc/%E5%B7%A5%E4%BD%9C%E5%8F%B0.png?Expires=1694521215&OSSAccessKeyId=TMP.3KgMRsD9f79Tqf2tebZDBtZLfFLpdPwonmP8vGnEbP35ZmPDiVZQ7Zktqp98WXVybGWnmGWL8NVhdcViaR7jPef3ihUb12&Signature=kmCoM%2FbeIxXrStZVDOdrdX%2BPpGU%3D)
+![数据统计](http://xiaoxiangzhu.oss-cn-beijing.aliyuncs.com/doc/%E6%95%B0%E6%8D%AE%E7%BB%9F%E8%AE%A1.png?Expires=1694521238&OSSAccessKeyId=TMP.3KgMRsD9f79Tqf2tebZDBtZLfFLpdPwonmP8vGnEbP35ZmPDiVZQ7Zktqp98WXVybGWnmGWL8NVhdcViaR7jPef3ihUb12&Signature=1OAK415uUd8nRyli%2F8Ql1sXPvIM%3D)
+![订单管理](http://xiaoxiangzhu.oss-cn-beijing.aliyuncs.com/doc/%E8%AE%A2%E5%8D%95%E7%AE%A1%E7%90%86.png?Expires=1694521268&OSSAccessKeyId=TMP.3KgMRsD9f79Tqf2tebZDBtZLfFLpdPwonmP8vGnEbP35ZmPDiVZQ7Zktqp98WXVybGWnmGWL8NVhdcViaR7jPef3ihUb12&Signature=mBuh%2FRJHCIiOyQngCX3iiecjSic%3D)
+![套餐管理](http://xiaoxiangzhu.oss-cn-beijing.aliyuncs.com/doc/%E5%A5%97%E9%A4%90%E7%AE%A1%E7%90%86.png?Expires=1694521304&OSSAccessKeyId=TMP.3KgMRsD9f79Tqf2tebZDBtZLfFLpdPwonmP8vGnEbP35ZmPDiVZQ7Zktqp98WXVybGWnmGWL8NVhdcViaR7jPef3ihUb12&Signature=oxlDJMN1GUpcs63ro20mYrbDEBM%3D)
+![移动端购物车](http://xiaoxiangzhu.oss-cn-beijing.aliyuncs.com/doc/%E7%A7%BB%E5%8A%A8%E7%AB%AF%E8%B4%AD%E7%89%A9%E8%BD%A6.png?Expires=1694521333&OSSAccessKeyId=TMP.3KgMRsD9f79Tqf2tebZDBtZLfFLpdPwonmP8vGnEbP35ZmPDiVZQ7Zktqp98WXVybGWnmGWL8NVhdcViaR7jPef3ihUb12&Signature=rvek1IkegmKR2R7suQHd1iJbifw%3D)
+![移动端历史订单](http://xiaoxiangzhu.oss-cn-beijing.aliyuncs.com/doc/%E5%8E%86%E5%8F%B2%E8%AE%A2%E5%8D%95.png?Expires=1694521364&OSSAccessKeyId=TMP.3KgMRsD9f79Tqf2tebZDBtZLfFLpdPwonmP8vGnEbP35ZmPDiVZQ7Zktqp98WXVybGWnmGWL8NVhdcViaR7jPef3ihUb12&Signature=b3vABxRddablpyUWaCrjdkn0cpo%3D)
