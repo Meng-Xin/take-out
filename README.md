@@ -115,10 +115,10 @@ main.go #入口函数，项目启动从main函数开始。
 ```
 ---
 **流程实现图**
-![流程实现图](http://xiaoxiangzhu.oss-cn-beijing.aliyuncs.com/doc/%E9%A1%B9%E7%9B%AE%E6%A8%A1%E5%9E%8B%E5%9B%BE.png?Expires=1694521058&OSSAccessKeyId=TMP.3KgMRsD9f79Tqf2tebZDBtZLfFLpdPwonmP8vGnEbP35ZmPDiVZQ7Zktqp98WXVybGWnmGWL8NVhdcViaR7jPef3ihUb12&Signature=3ogDbJoNK4kJkrridpskxkRZHLo%3D)
+![流程实现图](http://xiaoxiangzhu.oss-cn-beijing.aliyuncs.com/doc/%E9%A1%B9%E7%9B%AE%E6%A8%A1%E5%9E%8B%E5%9B%BE.png)
 ---
 **项目架构图**
-![项目架构图](http://xiaoxiangzhu.oss-cn-beijing.aliyuncs.com/doc/%E6%9E%B6%E6%9E%84%E5%9B%BE.png?Expires=1694521141&OSSAccessKeyId=TMP.3KgMRsD9f79Tqf2tebZDBtZLfFLpdPwonmP8vGnEbP35ZmPDiVZQ7Zktqp98WXVybGWnmGWL8NVhdcViaR7jPef3ihUb12&Signature=zkMxjUe8IJGMox4NbXI9id5tWSM%3D)
+![项目架构图](http://xiaoxiangzhu.oss-cn-beijing.aliyuncs.com/doc/%E6%9E%B6%E6%9E%84%E5%9B%BE.png)
 ---
 **参考实现**
 ![工作台](http://xiaoxiangzhu.oss-cn-beijing.aliyuncs.com/doc/%E5%B7%A5%E4%BD%9C%E5%8F%B0.png)
