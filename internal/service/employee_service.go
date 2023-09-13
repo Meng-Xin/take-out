@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"take-out/common"
 	"take-out/common/e"
 	"take-out/common/enum"
 	"take-out/common/utils"
@@ -17,10 +18,29 @@ type IEmployeeService interface {
 	Logout(ctx context.Context) error
 	EditPassword(context.Context, request.EmployeeEditPassword) error
 	CreateEmployee(ctx context.Context, employee request.EmployeeDTO) error
+	PageQuery(ctx context.Context, dto request.EmployeePageQueryDTO) (*common.PageResult, error)
 }
 
 type EmployeeImpl struct {
 	repo repository.EmployeeRepo
+}
+
+func (ei *EmployeeImpl) PageQuery(ctx context.Context, dto request.EmployeePageQueryDTO) (*common.PageResult, error) {
+	// 分页查询
+	pageResult, err := ei.repo.PageQuery(ctx, dto)
+	// 屏蔽敏感信息
+	if employees, ok := pageResult.Records.([]model.Employee); ok {
+		// 替换敏感信息
+		for key, _ := range employees {
+			employees[key].Password = "****"
+			employees[key].IdNumber = "****"
+			employees[key].Phone = "****"
+		}
+		// 重新赋值
+		pageResult.Records = employees
+	}
+
+	return pageResult, err
 }
 
 func (ei *EmployeeImpl) CreateEmployee(ctx context.Context, employeeDTO request.EmployeeDTO) error {
