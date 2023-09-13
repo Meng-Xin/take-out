@@ -6,19 +6,25 @@ import (
 	"take-out/internal/api/controller"
 	"take-out/internal/repository/dao"
 	"take-out/internal/service"
+	"take-out/middle"
 )
 
 type EmployeeRouter struct{ service service.IEmployeeService }
 
 func (er *EmployeeRouter) InitApiRouter(router *gin.RouterGroup) {
-	employeeRouter := router.Group("employee")
-	//employeeRouter.Use(middle.VerifyJWTAdmin())
+	publicRouter := router.Group("employee")
+	privateRouter := router.Group("employee")
+	// 私有路由使用jwt验证
+	privateRouter.Use(middle.VerifyJWTAdmin())
 	// 依赖注入
 	er.service = service.NewEmployeeService(
 		dao.NewEmployeeDao(global.DB),
 	)
 	employeeCtl := controller.NewEmployeeController(er.service)
 	{
-		employeeRouter.POST("/login", employeeCtl.Login)
+		publicRouter.POST("/login", employeeCtl.Login)
+		privateRouter.POST("/logout", employeeCtl.Logout)
+		privateRouter.POST("", employeeCtl.AddEmployee)
+		privateRouter.PUT("/editPassword", employeeCtl.EditPassword)
 	}
 }

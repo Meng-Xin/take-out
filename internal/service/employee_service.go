@@ -8,19 +8,67 @@ import (
 	"take-out/global"
 	"take-out/internal/api/request"
 	"take-out/internal/api/response"
+	"take-out/internal/model"
 	"take-out/internal/repository"
 )
 
 type IEmployeeService interface {
 	Login(context.Context, request.EmployeeLogin) (*response.EmployeeLogin, error)
+	Logout(ctx context.Context) error
+	EditPassword(context.Context, request.EmployeeEditPassword) error
+	CreateEmployee(ctx context.Context, employee request.EmployeeDTO) error
 }
 
 type EmployeeImpl struct {
 	repo repository.EmployeeRepo
 }
 
-func NewEmployeeService(repo repository.EmployeeRepo) IEmployeeService {
-	return &EmployeeImpl{repo: repo}
+func (ei *EmployeeImpl) CreateEmployee(ctx context.Context, employeeDTO request.EmployeeDTO) error {
+	var err error
+	// 1.新增员工,构建员工基础信息
+	entity := model.Employee{
+		Id:       employeeDTO.Id,
+		IdNumber: employeeDTO.IdNumber,
+		Name:     employeeDTO.Name,
+		Phone:    employeeDTO.Phone,
+		Sex:      employeeDTO.Sex,
+		Username: employeeDTO.UserName,
+	}
+	// 新增用户为启用状态
+	entity.Status = enum.ENABLE
+	// 新增用户初始密码为123456
+	entity.Password = utils.MD5V("123456", "", 0)
+	// 新增用户
+	err = ei.repo.Insert(ctx, entity)
+	return err
+}
+
+func (ei *EmployeeImpl) EditPassword(ctx context.Context, employeeEdit request.EmployeeEditPassword) error {
+	// 1.获取员工信息
+	employee, err := ei.repo.GetById(ctx, employeeEdit.EmpId)
+	if err != nil {
+		return err
+	}
+	// 校验用户老密码
+	if employee == nil {
+		return e.Error_ACCOUNT_NOT_FOUND
+	}
+	newHashPassword := utils.MD5V(employeeEdit.OldPassword, "", 0)
+	if employee.Password != newHashPassword {
+		return e.Error_PASSWORD_ERROR
+	}
+	// 修改员工密码
+	err = ei.repo.UpData(ctx, model.Employee{
+		Id:       employeeEdit.EmpId,
+		Password: newHashPassword,
+	})
+	return err
+}
+
+func (ei *EmployeeImpl) Logout(ctx context.Context) error {
+	// TODO 后续扩展为单点登录模式。 1.获取上下文中当前用户
+	// 2.如果是单点登录的话执行推出操作
+	return nil
 }
 
 func (ei *EmployeeImpl) Login(ctx context.Context, employeeLogin request.EmployeeLogin) (*response.EmployeeLogin, error) {
@@ -52,4 +100,8 @@ func (ei *EmployeeImpl) Login(ctx context.Context, employeeLogin request.Employe
 		UserName: employee.Username,
 	}
 	return &resp, nil
+}
+
+func NewEmployeeService(repo repository.EmployeeRepo) IEmployeeService {
+	return &EmployeeImpl{repo: repo}
 }

@@ -2,6 +2,7 @@ package model
 
 import (
 	"gorm.io/gorm"
+	"take-out/common/enum"
 	"time"
 )
 
@@ -21,13 +22,25 @@ type Employee struct {
 }
 
 func (e *Employee) BeforeCreate(tx *gorm.DB) error {
-	// 在插入记录千自动填充创建时间
+	// 自动填充 创建时间、创建人、更新时间、更新用户
 	e.CreateTime = time.Now()
+	e.UpdateTime = time.Now()
+	// 从上下文获取用户信息
+	value := tx.Statement.Context.Value(enum.CurrentId)
+	if uid, ok := value.(uint64); ok {
+		e.CreateUser = uid
+		e.UpdateUser = uid
+	}
 	return nil
 }
 
 func (e *Employee) BeforeUpdate(tx *gorm.DB) error {
 	// 在更新记录千自动填充更新时间
 	e.UpdateTime = time.Now()
+	// 从上下文获取用户信息
+	value := tx.Statement.Context.Value(enum.CurrentId)
+	if uid, ok := value.(uint64); ok {
+		e.UpdateUser = uid
+	}
 	return nil
 }
