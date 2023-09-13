@@ -19,3 +19,9 @@ type EmployeeDTO struct {
 	Sex      string `json:"sex" binding:"required"`      //性别
 	UserName string `json:"username" binding:"required"` //用户名
 }
+
+type EmployeePageQueryDTO struct {
+	Name     string `json:"name"`     // 分页查询的name
+	Page     int    `json:"page"`     // 分页查询的页数
+	PageSize int    `json:"pageSize"` // 分页查询的页容量
+}
