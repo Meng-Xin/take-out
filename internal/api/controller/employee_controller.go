@@ -142,3 +142,25 @@ func (ec *EmployeeController) PageQuery(ctx *gin.Context) {
 		Data: pageResult,
 	})
 }
+
+// OnOrOff 启用Or禁用员工状态
+func (ec *EmployeeController) OnOrOff(ctx *gin.Context) {
+	code := e.SUCCESS
+	id, _ := strconv.ParseUint(ctx.Query("id"), 10, 64)
+	status, _ := strconv.Atoi(ctx.Param("status"))
+	var err error
+	err = ec.service.SetStatus(ctx, id, status)
+	if err != nil {
+		code = e.ERROR
+		global.Log.Warn("OnOrOff Status  Error:", err.Error())
+		ctx.JSON(http.StatusOK, common.Result{
+			Code: code,
+			Msg:  err.Error(),
+		})
+	}
+	// 更新员工状态
+	global.Log.Info("启用Or禁用员工状态：", "id", id, "status", status)
+	ctx.JSON(http.StatusOK, common.Result{
+		Code: code,
+	})
+}

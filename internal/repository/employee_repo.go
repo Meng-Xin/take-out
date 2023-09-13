@@ -13,9 +13,11 @@ type EmployeeRepo interface {
 	// GetById 根据id获取用户信息
 	GetById(ctx context.Context, id uint64) (*model.Employee, error)
 	// UpData 动态修改
-	UpData(ctx context.Context, employee model.Employee) error
+	Update(ctx context.Context, employee model.Employee) error
 	// Insert 插入员工数据
 	Insert(ctx context.Context, entity model.Employee) error
 	// PageQuery 员工分页查询
 	PageQuery(ctx context.Context, dto request.EmployeePageQueryDTO) (*common.PageResult, error)
+	// UpdateStatus 更新员工状态
+	UpdateStatus(ctx context.Context, employee model.Employee) error
 }

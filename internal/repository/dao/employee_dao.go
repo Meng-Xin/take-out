@@ -13,6 +13,12 @@ type EmployeeDao struct {
 	db *gorm.DB
 }
 
+// UpDataZero 动态更新包括零值
+func (e *EmployeeDao) UpdateStatus(ctx context.Context, employee model.Employee) error {
+	err := e.db.WithContext(ctx).Model(&model.Employee{}).Where("id = ?", employee.Id).Update("status", employee.Status).Error
+	return err
+}
+
 func (e *EmployeeDao) PageQuery(ctx context.Context, dto request.EmployeePageQueryDTO) (*common.PageResult, error) {
 	// 分页查询 select count(*) from employee where name = ? limit x,y
 	var result common.PageResult
@@ -44,7 +50,7 @@ func (e *EmployeeDao) GetById(ctx context.Context, id uint64) (*model.Employee, 
 	return &employee, err
 }
 
-func (e *EmployeeDao) UpData(ctx context.Context, employee model.Employee) error {
+func (e *EmployeeDao) Update(ctx context.Context, employee model.Employee) error {
 	err := e.db.WithContext(ctx).Model(&employee).Updates(employee).Error
 	return err
 }

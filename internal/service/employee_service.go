@@ -19,10 +19,18 @@ type IEmployeeService interface {
 	EditPassword(context.Context, request.EmployeeEditPassword) error
 	CreateEmployee(ctx context.Context, employee request.EmployeeDTO) error
 	PageQuery(ctx context.Context, dto request.EmployeePageQueryDTO) (*common.PageResult, error)
+	SetStatus(ctx context.Context, id uint64, status int) error
 }
 
 type EmployeeImpl struct {
 	repo repository.EmployeeRepo
+}
+
+func (ei *EmployeeImpl) SetStatus(ctx context.Context, id uint64, status int) error {
+	// 设置用户状态,构造实体
+	entity := model.Employee{Id: id, Status: status}
+	err := ei.repo.UpdateStatus(ctx, entity)
+	return err
 }
 
 func (ei *EmployeeImpl) PageQuery(ctx context.Context, dto request.EmployeePageQueryDTO) (*common.PageResult, error) {
@@ -78,7 +86,7 @@ func (ei *EmployeeImpl) EditPassword(ctx context.Context, employeeEdit request.E
 		return e.Error_PASSWORD_ERROR
 	}
 	// 修改员工密码
-	err = ei.repo.UpData(ctx, model.Employee{
+	err = ei.repo.Update(ctx, model.Employee{
 		Id:       employeeEdit.EmpId,
 		Password: newHashPassword,
 	})
