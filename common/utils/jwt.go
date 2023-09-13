@@ -6,78 +6,41 @@ import (
 	"time"
 )
 
-const (
-	ATokenExpiredDuration = 2 * time.Hour
-	RTokenExpiredDuration = 30 * 24 * time.Hour
-	TokenIssuer           = "admin"
-)
-
-var (
-	mySecret          = []byte("my Secret Decode")
-	ErrorInvalidToken = errors.New("verify Token Failed")
-)
-
-type PayLoad struct {
-	UserID   uint64 `json:"user_id"`
-	Username string `json:"username"`
+// CustomPayload 自定义载荷继承原有接口并附带自己的字段
+type CustomPayload struct {
+	UserId     uint64
+	GrantScope string
 	jwt.RegisteredClaims
 }
 
-func getJWTTime(t time.Duration) *jwt.NumericDate {
-	return jwt.NewNumericDate(time.Now().Add(t))
-}
-
-func keyFunc(token *jwt.Token) (any, error) {
-	return mySecret, nil
-}
-
-// GenToken 颁发token access token 和 refresh token
-func GenToken(userID uint64, userName string, secret []byte) (atoken, rtoken string, err error) {
-	// 构建 凭证 基础信息
-	rc := jwt.RegisteredClaims{
-		Issuer:    TokenIssuer,                       // 颁发人
-		ExpiresAt: getJWTTime(ATokenExpiredDuration), // 到期时间
+// GenerateToken 生成Token uid 用户id subject 签发对象  secret 加盐
+func GenerateToken(uid uint64, subject string, secret string) (string, error) {
+	claim := CustomPayload{
+		UserId:     uid,
+		GrantScope: subject,
+		RegisteredClaims: jwt.RegisteredClaims{
+			Issuer:    "Auth_Server",                                   //签发者
+			Subject:   subject,                                         //签发对象
+			Audience:  jwt.ClaimStrings{"PC", "Wechat_Program"},        //签发受众
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),   //过期时间
+			NotBefore: jwt.NewNumericDate(time.Now().Add(time.Second)), //最早使用时间
+			IssuedAt:  jwt.NewNumericDate(time.Now()),                  //签发时间
+		},
 	}
-	// 绑定载荷信息
-	at := PayLoad{userID, userName, rc}
-	// 使用SHA256对载荷非对称加密，进行签名和加盐
-	atoken, err = jwt.NewWithClaims(jwt.SigningMethodHS256, at).SignedString(secret)
-
-	// refresh token 长token用来刷新，所以不需要载荷。
-	rt := rc
-	rt.ExpiresAt = getJWTTime(RTokenExpiredDuration)
-	rtoken, err = jwt.NewWithClaims(jwt.SigningMethodHS256, rt).SignedString(secret)
-
-	return atoken, rtoken, err
+	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claim).SignedString([]byte(secret))
+	return token, err
 }
 
-// VerifyToken 验证Token
-func VerifyToken(tokenId string) (PayLoad, error) {
-	var payLoad PayLoad
-	token, err := jwt.ParseWithClaims(tokenId, &payLoad, keyFunc)
+func ParseToken(token string, secret string) (*CustomPayload, error) {
+	// 解析token
+	parseToken, err := jwt.ParseWithClaims(token, &CustomPayload{}, func(token *jwt.Token) (i interface{}, err error) {
+		return []byte(secret), nil
+	})
 	if err != nil {
-		return payLoad, err
+		return nil, err
 	}
-	// 解析成功后为True
-	if !token.Valid {
-		err = ErrorInvalidToken
-		return payLoad, err
+	if claims, ok := parseToken.Claims.(*CustomPayload); ok && parseToken.Valid { // 校验token
+		return claims, nil
 	}
-	return payLoad, nil
-}
-
-// RefreshToken 通过refresh token 刷新 短token(atoken)
-func RefreshToken(atoken, rtoken string, secret []byte) (newAtoken, newRtoken string, err error) {
-	// rtoken 无效退出
-	if _, err = jwt.Parse(rtoken, keyFunc); err != nil {
-		return
-	}
-	// 从旧的access token 中解析出 payload 数据信息
-	var claim PayLoad
-	// 校验不通过，并且该错误是因为Token过期引起的，那么进行续签。
-	_, err = jwt.ParseWithClaims(atoken, &claim, keyFunc)
-	if err != nil && err.Error() == "token has invalid claims: token is expired" {
-		return GenToken(claim.UserID, claim.Username, secret)
-	}
-	return
+	return nil, errors.New("invalid token")
 }
