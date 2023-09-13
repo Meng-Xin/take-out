@@ -39,7 +39,8 @@ func (ei *EmployeeImpl) Login(ctx context.Context, employeeLogin request.Employe
 		return nil, e.Error_ACCOUNT_LOCKED
 	}
 	// 生成Token
-	token, _, err := utils.GenToken(employee.Id, employee.Name, []byte(global.Config.Jwt.Admin.Secret))
+	jwtConfig := global.Config.Jwt.Admin
+	token, err := utils.GenerateToken(employee.Id, jwtConfig.Name, jwtConfig.Secret)
 	if err != nil {
 		return nil, err
 	}
