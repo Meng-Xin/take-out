@@ -26,5 +26,6 @@ func (er *EmployeeRouter) InitApiRouter(router *gin.RouterGroup) {
 		privateRouter.POST("/logout", employeeCtl.Logout)
 		privateRouter.POST("", employeeCtl.AddEmployee)
 		privateRouter.PUT("/editPassword", employeeCtl.EditPassword)
+		privateRouter.GET("/page", employeeCtl.PageQuery)
 	}
 }
