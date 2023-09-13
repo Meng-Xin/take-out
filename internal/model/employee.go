@@ -7,18 +7,18 @@ import (
 )
 
 type Employee struct {
-	Id         uint64
-	Username   string
-	Name       string
-	Password   string
-	Phone      string
-	Sex        string
-	IdNumber   string
-	Status     int
-	CreateTime time.Time
-	UpdateTime time.Time
-	CreateUser uint64
-	UpdateUser uint64
+	Id         uint64    `json:"id"`
+	Username   string    `json:"username"`
+	Name       string    `json:"name"`
+	Password   string    `json:"password"`
+	Phone      string    `json:"phone"`
+	Sex        string    `json:"sex"`
+	IdNumber   string    `json:"idNumber"`
+	Status     int       `json:"status"`
+	CreateTime time.Time `json:"createTime"`
+	UpdateTime time.Time `json:"updateTime"`
+	CreateUser uint64    `json:"createUser"`
+	UpdateUser uint64    `json:"updateUser"`
 }
 
 func (e *Employee) BeforeCreate(tx *gorm.DB) error {
@@ -42,5 +42,12 @@ func (e *Employee) BeforeUpdate(tx *gorm.DB) error {
 	if uid, ok := value.(uint64); ok {
 		e.UpdateUser = uid
 	}
+	return nil
+}
+
+func (e *Employee) AfterFind(tx *gorm.DB) error {
+	// 格式化当前日期
+	//e.CreateTime.Format(time.DateOnly)
+	//e.CreateTime.Format(time.DateTime)
 	return nil
 }
