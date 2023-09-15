@@ -26,6 +26,8 @@ WORKDIR /app
 
 # 在builder阶段复制可执行的go二进制文件app/go-exporter 到/app/go_exporter中
 COPY --from=builder /app/gin-server /app/gin-server
+# 创建日志文件
+VOLUME /app/logs
 
 # 时区设置
 ENV TZ="Asia/Shanghai"
