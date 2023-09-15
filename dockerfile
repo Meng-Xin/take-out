@@ -31,7 +31,7 @@ COPY --from=builder /app/gin-server /app/gin-server
 ENV TZ="Asia/Shanghai"
 
 # 开放端口
-EXPOSE 9505
+EXPOSE 8080
 
 # 启动服务器
 CMD ["/app/gin-server"]
