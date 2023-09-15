@@ -7,13 +7,12 @@ import (
 
 func routerInit() *gin.Engine {
 	r := gin.Default()
-	allrouter := router.AllRouter
-	// Swagger
+	allRouter := router.AllRouter
 
 	// admin
 	admin := r.Group("/admin")
 	{
-		allrouter.EmployeeRouter.InitApiRouter(admin)
+		allRouter.EmployeeRouter.InitApiRouter(admin)
 	}
 	return r
 }
