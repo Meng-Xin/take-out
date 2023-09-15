@@ -3,6 +3,7 @@ services:
   redis:
     image: redis
     container_name: go-redis
+    restart: always
     volumes:
       - /data/redis/data:/data
       - /data/redis/conf:/redis.conf:/usr/local/etc/redis/redis.conf
@@ -13,8 +14,8 @@ services:
       - '6379:6379'
   mysql:
     image: mysql
-    restart: always
     container_name: go-mysql
+    restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root
       TZ: Asia/Shanghai
