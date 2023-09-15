@@ -74,7 +74,15 @@ $ go run main.go
 # 指定release配置文件启动
 $ go run main.go --env=release
 ```
-
+## 2.DockerCompose 启动
+```shell
+# 下载项目
+$ git clone https://github.com/Meng-Xin/sky-take-out-go.git
+# 切换到运行目录
+$ cd /takeout
+# 运行docker-compose
+$ docker-compose up -d
+```
 ## 项目架构图
 
 ```xquery
