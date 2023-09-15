@@ -1,0 +1,41 @@
+version: '3.3'
+services:
+  redis:
+    image: redis
+    container_name: go-redis
+    volumes:
+      - /data/redis/data:/data
+      - /data/redis/conf:/redis.conf:/usr/local/etc/redis/redis.conf
+      - /data/redis/logs:/logs
+    command:
+      - redis-server
+    ports:
+      - '6379:6379'
+  mysql:
+    image: mysql
+    restart: always
+    container_name: go-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      TZ: Asia/Shanghai
+      LANG: en_US.UTF-8
+    ports:
+      - '3306:3306'
+    volumes:
+      - /data/mysql/data:/var/lib/mysql
+      - /data/mysql/config:/config/my.cnf:/etc/mysql/my.cnf
+    command:
+      --max_connections=1000
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_general_ci
+      --default-authentication-plugin=mysql_native_password
+  web:
+    container_name: gin-server
+    build:
+      context: ./
+      dockerfile: dockerfile
+    restart: always
+    volumes:
+      - /home/running/takeout/config/:/app/config/
+    ports:
+      - '8080-8080'
