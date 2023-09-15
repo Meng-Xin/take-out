@@ -25,7 +25,7 @@ FROM alpine
 WORKDIR /app
 
 # 在builder阶段复制可执行的go二进制文件app/go-exporter 到/app/go_exporter中
-COPY --from=builder /app/go-exporter /app/go_exporter
+COPY --from=builder /app/gin-server /app/gin-server
 
 # 时区设置
 ENV TZ="Asia/Shanghai"
