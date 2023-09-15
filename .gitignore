@@ -1,4 +1,4 @@
 *.idea
 *.log
 *.txt
-*.yaml
+#*.yaml
