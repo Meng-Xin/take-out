@@ -20,10 +20,31 @@ type IEmployeeService interface {
 	CreateEmployee(ctx context.Context, employee request.EmployeeDTO) error
 	PageQuery(ctx context.Context, dto request.EmployeePageQueryDTO) (*common.PageResult, error)
 	SetStatus(ctx context.Context, id uint64, status int) error
+	UpdateEmployee(ctx context.Context, dto request.EmployeeDTO) error
+	GetById(ctx context.Context, id uint64) (model.Employee, error)
 }
 
 type EmployeeImpl struct {
 	repo repository.EmployeeRepo
+}
+
+func (ei *EmployeeImpl) GetById(ctx context.Context, id uint64) (model.Employee, error) {
+	employee, err := ei.repo.GetById(ctx, id)
+	employee.Password = "***"
+	return *employee, err
+}
+
+func (ei *EmployeeImpl) UpdateEmployee(ctx context.Context, dto request.EmployeeDTO) error {
+	// 构建model实体进行更新
+	err := ei.repo.Update(ctx, model.Employee{
+		Id:       dto.Id,
+		Username: dto.UserName,
+		Name:     dto.Name,
+		Phone:    dto.Phone,
+		Sex:      dto.Sex,
+		IdNumber: dto.IdNumber,
+	})
+	return err
 }
 
 func (ei *EmployeeImpl) SetStatus(ctx context.Context, id uint64, status int) error {

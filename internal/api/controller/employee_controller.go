@@ -164,3 +164,47 @@ func (ec *EmployeeController) OnOrOff(ctx *gin.Context) {
 		Code: code,
 	})
 }
+
+// UpdateEmployee 编辑员工信息
+func (ec *EmployeeController) UpdateEmployee(ctx *gin.Context) {
+	code := e.SUCCESS
+	var employeeDTO request.EmployeeDTO
+	err := ctx.Bind(&employeeDTO)
+	if err != nil {
+		global.Log.Debug("UpdateEmployee Error:", err.Error())
+		return
+	}
+	// 修改员工信息
+	err = ec.service.UpdateEmployee(ctx.Request.Context(), employeeDTO)
+	if err != nil {
+		code = e.ERROR
+		global.Log.Warn("UpdateEmployee Error:", err.Error())
+		ctx.JSON(http.StatusOK, common.Result{
+			Code: code,
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, common.Result{
+		Code: code,
+	})
+}
+
+// GetById 获取员工信息根据id
+func (ec *EmployeeController) GetById(ctx *gin.Context) {
+	code := e.SUCCESS
+	id, _ := strconv.ParseUint(ctx.Param("id"), 10, 64)
+
+	employee, err := ec.service.GetById(ctx.Request.Context(), id)
+	if err != nil {
+		code = e.ERROR
+		global.Log.Warn("EmployeeCtrl GetById Error", err.Error())
+		ctx.JSON(http.StatusOK, common.Result{
+			Code: code,
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, common.Result{
+		Code: code,
+		Data: employee,
+	})
+}
