@@ -98,3 +98,15 @@ func (cc *CategoryController) EditCategory(ctx *gin.Context) {
 		Code: code,
 	})
 }
+
+func (cc *CategoryController) SetStatus(ctx *gin.Context) {
+	code := e.SUCCESS
+	id, _ := strconv.ParseUint(ctx.Query("id"), 10, 64)
+	status, _ := strconv.Atoi(ctx.Param("status"))
+	err := cc.service.SetStatus(ctx, id, status)
+	if err != nil {
+		code = e.ERROR
+		global.Log.Warn("Category SetStatus failed", err.Error())
+	}
+	ctx.JSON(http.StatusOK, common.Result{Code: code, Msg: e.GetMsg(code)})
+}

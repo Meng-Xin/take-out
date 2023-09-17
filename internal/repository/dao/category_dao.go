@@ -13,6 +13,11 @@ type CategoryDao struct {
 	db *gorm.DB
 }
 
+func (c *CategoryDao) SetStatus(ctx context.Context, category model.Category) error {
+	err := c.db.WithContext(ctx).Model(&category).Update("status", category.Status).Error
+	return err
+}
+
 func (c *CategoryDao) Update(ctx context.Context, category model.Category) error {
 	err := c.db.WithContext(ctx).Model(&category).Updates(&category).Error
 	return err

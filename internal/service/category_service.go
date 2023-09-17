@@ -16,10 +16,19 @@ type ICategoryService interface {
 	List(ctx context.Context, cate int) ([]model.Category, error)
 	DeleteById(ctx context.Context, id uint64) error
 	Update(ctx context.Context, dto request.CategoryDTO) error
+	SetStatus(ctx context.Context, id uint64, status int) error
 }
 
 type CategoryImpl struct {
 	repo repository.CategoryRepo
+}
+
+func (c *CategoryImpl) SetStatus(ctx context.Context, id uint64, status int) error {
+	err := c.repo.SetStatus(ctx, model.Category{
+		Id:     id,
+		Status: status,
+	})
+	return err
 }
 
 func (c *CategoryImpl) Update(ctx context.Context, dto request.CategoryDTO) error {

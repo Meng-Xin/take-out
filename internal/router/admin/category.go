@@ -26,6 +26,7 @@ func (cr *CategoryRouter) InitApiRouter(parent *gin.RouterGroup) {
 		privateRouter.GET("list", categoryCtrl.List)
 		privateRouter.DELETE("", categoryCtrl.DeleteById)
 		privateRouter.PUT("", categoryCtrl.EditCategory)
+		privateRouter.POST("status/:status", categoryCtrl.SetStatus)
 
 	}
 }
