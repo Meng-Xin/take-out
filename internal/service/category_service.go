@@ -13,10 +13,35 @@ import (
 type ICategoryService interface {
 	AddCategory(ctx context.Context, dto request.CategoryDTO) error
 	PageQuery(ctx context.Context, dto request.CategoryPageQueryDTO) (*common.PageResult, error)
+	List(ctx context.Context, cate int) ([]model.Category, error)
+	DeleteById(ctx context.Context, id uint64) error
+	Update(ctx context.Context, dto request.CategoryDTO) error
 }
 
 type CategoryImpl struct {
 	repo repository.CategoryRepo
+}
+
+func (c *CategoryImpl) Update(ctx context.Context, dto request.CategoryDTO) error {
+	cate, _ := strconv.Atoi(dto.Cate)
+	sort, _ := strconv.Atoi(dto.Sort)
+	err := c.repo.Update(ctx, model.Category{
+		Id:   dto.Id,
+		Type: cate,
+		Name: dto.Name,
+		Sort: sort,
+	})
+	return err
+}
+
+func (c *CategoryImpl) DeleteById(ctx context.Context, id uint64) error {
+	err := c.repo.DeleteById(ctx, id)
+	return err
+}
+
+func (c *CategoryImpl) List(ctx context.Context, cate int) ([]model.Category, error) {
+	list, err := c.repo.List(ctx, cate)
+	return list, err
 }
 
 func (c *CategoryImpl) PageQuery(ctx context.Context, dto request.CategoryPageQueryDTO) (*common.PageResult, error) {

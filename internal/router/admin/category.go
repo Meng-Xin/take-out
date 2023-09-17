@@ -23,5 +23,9 @@ func (cr *CategoryRouter) InitApiRouter(parent *gin.RouterGroup) {
 	{
 		privateRouter.POST("", categoryCtrl.AddCategory)
 		privateRouter.GET("/page", categoryCtrl.PageQuery)
+		privateRouter.GET("list", categoryCtrl.List)
+		privateRouter.DELETE("", categoryCtrl.DeleteById)
+		privateRouter.PUT("", categoryCtrl.EditCategory)
+
 	}
 }

@@ -13,6 +13,26 @@ type CategoryDao struct {
 	db *gorm.DB
 }
 
+func (c *CategoryDao) Update(ctx context.Context, category model.Category) error {
+	err := c.db.WithContext(ctx).Model(&category).Updates(&category).Error
+	return err
+}
+
+func (c *CategoryDao) DeleteById(ctx context.Context, id uint64) error {
+	err := c.db.WithContext(ctx).Delete(&model.Category{Id: id}).Error
+	return err
+}
+
+func (c *CategoryDao) List(ctx context.Context, cate int) ([]model.Category, error) {
+	var categoryList []model.Category
+	err := c.db.WithContext(ctx).Where("type = ?", cate).
+		Order("sort asc").
+		Order("create_time desc").
+		Find(&categoryList).
+		Error
+	return categoryList, err
+}
+
 func (c *CategoryDao) PageQuery(ctx context.Context, dto request.CategoryPageQueryDTO) (*common.PageResult, error) {
 	var pageResult common.PageResult
 	var categoryList []model.Category
@@ -30,7 +50,10 @@ func (c *CategoryDao) PageQuery(ctx context.Context, dto request.CategoryPageQue
 		return nil, err
 	}
 	// 查询数据
-	err := query.Scopes(pageResult.Paginate(&dto.Page, &dto.PageSize)).Find(&categoryList).Error
+	err := query.Scopes(pageResult.Paginate(&dto.Page, &dto.PageSize)).
+		Order("create_time desc").
+		Find(&categoryList).
+		Error
 	pageResult.Records = categoryList
 	return &pageResult, err
 }

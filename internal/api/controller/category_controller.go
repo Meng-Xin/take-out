@@ -52,3 +52,49 @@ func (cc *CategoryController) PageQuery(ctx *gin.Context) {
 		Data: query,
 	})
 }
+
+func (cc *CategoryController) List(ctx *gin.Context) {
+	code := e.SUCCESS
+	cate, _ := strconv.Atoi(ctx.Query("type"))
+	list, err := cc.service.List(ctx, cate)
+	if err != nil {
+		code = e.ERROR
+		global.Log.Warn("Category List failed", err.Error())
+	}
+	ctx.JSON(http.StatusOK, common.Result{
+		Code: code,
+		Data: list,
+	})
+}
+
+func (cc *CategoryController) DeleteById(ctx *gin.Context) {
+	code := e.SUCCESS
+	id, _ := strconv.ParseUint(ctx.Query("id"), 10, 64)
+	err := cc.service.DeleteById(ctx, id)
+	if err != nil {
+		code = e.ERROR
+		global.Log.Warn("Category DeleteById failed", err.Error())
+	}
+	ctx.JSON(http.StatusOK, common.Result{
+		Code: code,
+	})
+}
+
+func (cc *CategoryController) EditCategory(ctx *gin.Context) {
+	code := e.SUCCESS
+	var categoryDTO request.CategoryDTO
+	err := ctx.Bind(&categoryDTO)
+	if err != nil {
+		code = e.ERROR
+		global.Log.Debug("param CategoryDTO failed", err.Error())
+		return
+	}
+	err = cc.service.Update(ctx, categoryDTO)
+	if err != nil {
+		code = e.ERROR
+		global.Log.Debug("Category Edit failed", err.Error())
+	}
+	ctx.JSON(http.StatusOK, common.Result{
+		Code: code,
+	})
+}
