@@ -13,6 +13,7 @@ func routerInit() *gin.Engine {
 	admin := r.Group("/admin")
 	{
 		allRouter.EmployeeRouter.InitApiRouter(admin)
+		allRouter.CategoryRouter.InitApiRouter(admin)
 	}
 	return r
 }

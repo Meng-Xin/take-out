@@ -12,7 +12,7 @@ import (
 type CategoryRouter struct{}
 
 func (cr *CategoryRouter) InitApiRouter(parent *gin.RouterGroup) {
-	publicRouter := parent.Group("category")
+	//publicRouter := parent.Group("category")
 	privateRouter := parent.Group("category")
 	// 私有路由使用jwt验证
 	privateRouter.Use(middle.VerifyJWTAdmin())
@@ -21,6 +21,7 @@ func (cr *CategoryRouter) InitApiRouter(parent *gin.RouterGroup) {
 		service.NewCategoryService(dao.NewCategoryDao(global.DB)),
 	)
 	{
-		publicRouter.POST("", categoryCtrl.AddCategory)
+		privateRouter.POST("", categoryCtrl.AddCategory)
+		privateRouter.GET("/page", categoryCtrl.PageQuery)
 	}
 }

@@ -8,7 +8,7 @@ import (
 
 type Category struct {
 	Id         uint64    `json:"id"`
-	Cate       int       `json:"type"`
+	Type       int       `json:"type"`
 	Name       string    `json:"name"`
 	Sort       int       `json:"sort"`
 	Status     int       `json:"status"`
