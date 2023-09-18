@@ -36,9 +36,9 @@ func NewMySlog(setLevel string, filePath string) ILog {
 
 func (s *MySLog) Debug(args ...interface{}) {
 	if len(args) == 1 {
-		s.slog.Info(args[0].(string))
+		s.slog.Debug(args[0].(string))
 	} else if len(args) > 1 {
-		s.slog.Info(args[0].(string), args[1:]...)
+		s.slog.Debug(args[0].(string), args[1:]...)
 	}
 }
 
@@ -52,17 +52,17 @@ func (s *MySLog) Info(args ...interface{}) {
 
 func (s *MySLog) Warn(args ...interface{}) {
 	if len(args) == 1 {
-		s.slog.Info(args[0].(string))
+		s.slog.Warn(args[0].(string))
 	} else if len(args) > 1 {
-		s.slog.Info(args[0].(string), args[1:]...)
+		s.slog.Warn(args[0].(string), args[1:]...)
 	}
 }
 
 func (s *MySLog) Error(args ...interface{}) {
 	if len(args) == 1 {
-		s.slog.Info(args[0].(string))
+		s.slog.Error(args[0].(string))
 	} else if len(args) > 1 {
-		s.slog.Info(args[0].(string), args[1:]...)
+		s.slog.Error(args[0].(string), args[1:]...)
 	}
 }
 
