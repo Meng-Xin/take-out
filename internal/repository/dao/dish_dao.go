@@ -14,6 +14,13 @@ type DishDao struct {
 	db *gorm.DB
 }
 
+func (dd *DishDao) GetById(ctx context.Context, id uint64) (*model.Dish, error) {
+	var dish model.Dish
+	dish.Id = id
+	err := dd.db.WithContext(ctx).Find(&dish).Error
+	return &dish, err
+}
+
 func (dd *DishDao) PageQuery(ctx context.Context, dto *request.DishPageQueryDTO) (*common.PageResult, error) {
 	var pageResult common.PageResult
 	var dishList []response.DishPageVo
@@ -34,8 +41,8 @@ func (dd *DishDao) PageQuery(ctx context.Context, dto *request.DishPageQueryDTO)
 	}
 	// 3.通用分页查询
 	if err := query.Scopes(pageResult.Paginate(&dto.Page, &dto.PageSize)).
-		Select("*,c.name as category_name").
-		Joins("LEFT JOIN category c ON c.id = dish.category_id").
+		Select("dish.*,c.name as category_name").
+		Joins("LEFT OUTER JOIN category c ON c.id = dish.category_id").
 		Order("dish.create_time desc").Scan(&dishList).Error; err != nil {
 		return nil, err
 	}
