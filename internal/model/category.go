@@ -18,26 +18,26 @@ type Category struct {
 	UpdateUser uint64    `json:"updateUser"`
 }
 
-func (e *Category) BeforeCreate(tx *gorm.DB) error {
+func (c *Category) BeforeCreate(tx *gorm.DB) error {
 	// 自动填充 创建时间、创建人、更新时间、更新用户
-	e.CreateTime = time.Now()
-	e.UpdateTime = time.Now()
+	c.CreateTime = time.Now()
+	c.UpdateTime = time.Now()
 	// 从上下文获取用户信息
 	value := tx.Statement.Context.Value(enum.CurrentId)
 	if uid, ok := value.(uint64); ok {
-		e.CreateUser = uid
-		e.UpdateUser = uid
+		c.CreateUser = uid
+		c.UpdateUser = uid
 	}
 	return nil
 }
 
-func (e *Category) BeforeUpdate(tx *gorm.DB) error {
+func (c *Category) BeforeUpdate(tx *gorm.DB) error {
 	// 在更新记录千自动填充更新时间
-	e.UpdateTime = time.Now()
+	c.UpdateTime = time.Now()
 	// 从上下文获取用户信息
 	value := tx.Statement.Context.Value(enum.CurrentId)
 	if uid, ok := value.(uint64); ok {
-		e.UpdateUser = uid
+		c.UpdateUser = uid
 	}
 	return nil
 }
