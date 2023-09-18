@@ -16,7 +16,7 @@ type DishDao struct {
 
 func (dd *DishDao) PageQuery(ctx context.Context, dto *request.DishPageQueryDTO) (*common.PageResult, error) {
 	var pageResult common.PageResult
-	var dishList []response.DishVo
+	var dishList []response.DishPageVo
 	// 1.动态拼接sql
 	query := dd.db.WithContext(ctx).Model(&model.Dish{})
 	if dto.Name != "" {
