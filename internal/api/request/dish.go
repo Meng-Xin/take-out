@@ -12,3 +12,11 @@ type DishDTO struct {
 	Status      int                `json:"status"`
 	Flavors     []model.DishFlavor `json:"flavors"`
 }
+
+type DishPageQueryDTO struct {
+	Page       int    `json:"page"`       // 分页查询的页数
+	PageSize   int    `json:"pageSize"`   // 分页查询的页容量
+	Name       string `json:"name"`       // 分页查询的name
+	CategoryId uint64 `json:"categoryId"` // 分类ID:
+	Status     int    `json:"status"`     // 菜品状态
+}

@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"strconv"
+	"take-out/common"
 	"take-out/common/enum"
 	"take-out/internal/api/request"
 	"take-out/internal/model"
@@ -11,11 +12,20 @@ import (
 
 type IDishService interface {
 	AddDishWithFlavors(ctx context.Context, dto request.DishDTO) error
+	PageQuery(ctx context.Context, dto *request.DishPageQueryDTO) (*common.PageResult, error)
 }
 
 type DishServiceImpl struct {
 	repo           repository.DishRepo
 	dishFlavorRepo repository.DishFlavorRepo
+}
+
+func (d *DishServiceImpl) PageQuery(ctx context.Context, dto *request.DishPageQueryDTO) (*common.PageResult, error) {
+	pageResult, err := d.repo.PageQuery(ctx, dto)
+	if err != nil {
+		return nil, err
+	}
+	return pageResult, err
 }
 
 func (d *DishServiceImpl) AddDishWithFlavors(ctx context.Context, dto request.DishDTO) error {
