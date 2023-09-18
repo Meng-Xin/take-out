@@ -6,3 +6,7 @@ type DishFlavor struct {
 	Name   string `json:"name"`    //口味主题 温度|甜度|辣度
 	Value  string `json:"value"`   //口味信息 可多个
 }
+
+func (d *DishFlavor) TableName() string {
+	return "dish_flavor"
+}

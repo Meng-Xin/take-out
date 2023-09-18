@@ -62,3 +62,18 @@ func (dc *DishController) PageQuery(ctx *gin.Context) {
 		Data: pageResult,
 	})
 }
+
+// GetById 根据id查询菜品信息
+func (dc *DishController) GetById(ctx *gin.Context) {
+	code := e.SUCCESS
+	id, _ := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	// 根据id查询并获取口味数据
+	dishVO, err := dc.service.GetByIdWithFlavors(ctx, id)
+	if err != nil {
+		return
+	}
+	ctx.JSON(http.StatusOK, common.Result{
+		Code: code,
+		Data: dishVO,
+	})
+}

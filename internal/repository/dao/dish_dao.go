@@ -17,7 +17,7 @@ type DishDao struct {
 func (dd *DishDao) GetById(ctx context.Context, id uint64) (*model.Dish, error) {
 	var dish model.Dish
 	dish.Id = id
-	err := dd.db.WithContext(ctx).Find(&dish).Error
+	err := dd.db.WithContext(ctx).Preload("Flavors").Find(&dish).Error
 	return &dish, err
 }
 

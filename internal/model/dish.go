@@ -18,6 +18,8 @@ type Dish struct {
 	UpdateTime  time.Time `json:"updateTime"`
 	CreateUser  uint64    `json:"createUser"`
 	UpdateUser  uint64    `json:"updateUser"`
+	// 一对多
+	Flavors []DishFlavor `json:"flavors"`
 }
 
 func (e *Dish) BeforeCreate(tx *gorm.DB) error {

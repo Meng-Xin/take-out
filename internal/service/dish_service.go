@@ -6,6 +6,7 @@ import (
 	"take-out/common"
 	"take-out/common/enum"
 	"take-out/internal/api/request"
+	"take-out/internal/api/response"
 	"take-out/internal/model"
 	"take-out/internal/repository"
 )
@@ -13,11 +14,29 @@ import (
 type IDishService interface {
 	AddDishWithFlavors(ctx context.Context, dto request.DishDTO) error
 	PageQuery(ctx context.Context, dto *request.DishPageQueryDTO) (*common.PageResult, error)
+	GetByIdWithFlavors(ctx context.Context, id uint64) (response.DishVo, error)
 }
 
 type DishServiceImpl struct {
 	repo           repository.DishRepo
 	dishFlavorRepo repository.DishFlavorRepo
+}
+
+func (d *DishServiceImpl) GetByIdWithFlavors(ctx context.Context, id uint64) (response.DishVo, error) {
+
+	dish, err := d.repo.GetById(ctx, id)
+	dishVo := response.DishVo{
+		Id:          dish.Id,
+		Name:        dish.Name,
+		CategoryId:  dish.CategoryId,
+		Price:       dish.Price,
+		Image:       dish.Image,
+		Description: dish.Description,
+		Status:      dish.Status,
+		UpdateTime:  dish.UpdateTime,
+		Flavors:     dish.Flavors,
+	}
+	return dishVo, err
 }
 
 func (d *DishServiceImpl) PageQuery(ctx context.Context, dto *request.DishPageQueryDTO) (*common.PageResult, error) {
