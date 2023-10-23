@@ -1,4 +1,3 @@
 *.idea
 *.log
 *.txt
-./config/*.yaml
