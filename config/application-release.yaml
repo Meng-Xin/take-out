@@ -16,7 +16,7 @@ redis:
 
 log:
   level: info
-
+  filepath: ./logger/systemLog.txt
 jwt:
   admin:
     # 设置jwt签名加密时使用的秘钥
