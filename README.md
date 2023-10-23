@@ -78,8 +78,13 @@ $ go run main.go --env=release
 ```shell
 # 下载项目
 $ git clone https://github.com/Meng-Xin/sky-take-out-go.git
+# 创建配置文件需要的共享卷
+$ mkdir /home/running/takeout/config
+$ mkdir /home/running/takeout/logs
 # 切换到运行目录
 $ cd /takeout
+# 拷贝配置文件到共享卷中
+$ cp ./config/*.yaml /home/running/takeout/config/
 # 运行docker-compose
 $ docker-compose up -d
 ```
