@@ -96,3 +96,22 @@ func (dc *DishController) List(ctx *gin.Context) {
 		Data: dishVO,
 	})
 }
+
+// OnOrClose 菜品启售或禁售
+func (dc *DishController) OnOrClose(ctx *gin.Context) {
+	code := e.SUCCESS
+	id, _ := strconv.ParseUint(ctx.Query("id"), 10, 64)
+	status, _ := strconv.Atoi(ctx.Query("status"))
+	// 根据id修改对应菜品的状态
+	err := dc.service.OnOrClose(ctx, id, status)
+	if err != nil {
+		code = e.ERROR
+		slog.Warn("菜品启售或禁售失败！", "Err:", err.Error())
+		ctx.JSON(http.StatusOK, common.Result{Code: code, Msg: e.GetMsg(code)})
+		return
+	}
+	ctx.JSON(http.StatusOK, common.Result{
+		Code: code,
+		Msg:  e.GetMsg(code),
+	})
+}

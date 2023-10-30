@@ -16,11 +16,17 @@ type IDishService interface {
 	PageQuery(ctx context.Context, dto *request.DishPageQueryDTO) (*common.PageResult, error)
 	GetByIdWithFlavors(ctx context.Context, id uint64) (response.DishVo, error)
 	List(ctx context.Context, categoryId uint64) ([]response.DishListVo, error)
+	OnOrClose(ctx context.Context, id uint64, status int) error
 }
 
 type DishServiceImpl struct {
 	repo           repository.DishRepo
 	dishFlavorRepo repository.DishFlavorRepo
+}
+
+func (d *DishServiceImpl) OnOrClose(ctx context.Context, id uint64, status int) error {
+	err := d.repo.OnOrClose(ctx, id, status)
+	return err
 }
 
 func (d *DishServiceImpl) List(ctx context.Context, categoryId uint64) ([]response.DishListVo, error) {

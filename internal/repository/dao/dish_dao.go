@@ -14,6 +14,11 @@ type DishDao struct {
 	db *gorm.DB
 }
 
+func (dd *DishDao) OnOrClose(ctx context.Context, id uint64, status int) error {
+	err := dd.db.WithContext(ctx).Model(&model.Dish{Id: id}).Update("status", status).Error
+	return err
+}
+
 func (dd *DishDao) List(ctx context.Context, categoryId uint64) ([]model.Dish, error) {
 	var dishList []model.Dish
 	err := dd.db.WithContext(ctx).Where("category_id = ?", categoryId).Find(&dishList).Error

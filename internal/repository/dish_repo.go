@@ -14,4 +14,5 @@ type DishRepo interface {
 	PageQuery(ctx context.Context, dto *request.DishPageQueryDTO) (*common.PageResult, error)
 	GetById(ctx context.Context, id uint64) (*model.Dish, error)
 	List(ctx context.Context, categoryId uint64) ([]model.Dish, error)
+	OnOrClose(ctx context.Context, id uint64, status int) error
 }
