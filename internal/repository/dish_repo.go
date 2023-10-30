@@ -13,4 +13,5 @@ type DishRepo interface {
 	Insert(db *gorm.DB, dish *model.Dish) error
 	PageQuery(ctx context.Context, dto *request.DishPageQueryDTO) (*common.PageResult, error)
 	GetById(ctx context.Context, id uint64) (*model.Dish, error)
+	List(ctx context.Context, categoryId uint64) ([]model.Dish, error)
 }

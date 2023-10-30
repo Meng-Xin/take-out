@@ -15,11 +15,37 @@ type IDishService interface {
 	AddDishWithFlavors(ctx context.Context, dto request.DishDTO) error
 	PageQuery(ctx context.Context, dto *request.DishPageQueryDTO) (*common.PageResult, error)
 	GetByIdWithFlavors(ctx context.Context, id uint64) (response.DishVo, error)
+	List(ctx context.Context, categoryId uint64) ([]response.DishListVo, error)
 }
 
 type DishServiceImpl struct {
 	repo           repository.DishRepo
 	dishFlavorRepo repository.DishFlavorRepo
+}
+
+func (d *DishServiceImpl) List(ctx context.Context, categoryId uint64) ([]response.DishListVo, error) {
+	var dishListVo []response.DishListVo
+	dishList, err := d.repo.List(ctx, categoryId)
+	if err != nil {
+		return nil, err
+	}
+	// 这里这样的写法是 规范化Vo传输对象。
+	for _, dish := range dishList {
+		dishListVo = append(dishListVo, response.DishListVo{
+			Id:          dish.Id,
+			Name:        dish.Name,
+			CategoryId:  dish.CategoryId,
+			Price:       dish.Price,
+			Image:       dish.Image,
+			Description: dish.Description,
+			Status:      dish.Status,
+			CreateTime:  dish.CreateTime,
+			UpdateTime:  dish.UpdateTime,
+			CreateUser:  dish.CreateUser,
+			UpdateUser:  dish.UpdateUser,
+		})
+	}
+	return dishListVo, nil
 }
 
 func (d *DishServiceImpl) GetByIdWithFlavors(ctx context.Context, id uint64) (response.DishVo, error) {

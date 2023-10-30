@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"take-out/common"
@@ -70,6 +71,24 @@ func (dc *DishController) GetById(ctx *gin.Context) {
 	// 根据id查询并获取口味数据
 	dishVO, err := dc.service.GetByIdWithFlavors(ctx, id)
 	if err != nil {
+		return
+	}
+	ctx.JSON(http.StatusOK, common.Result{
+		Code: code,
+		Data: dishVO,
+	})
+}
+
+// List 根据分类id查询菜品信息
+func (dc *DishController) List(ctx *gin.Context) {
+	code := e.SUCCESS
+	categoryId, _ := strconv.ParseUint(ctx.Query("categoryId"), 10, 64)
+	// 根据id查询并获取口味数据
+	dishVO, err := dc.service.List(ctx, categoryId)
+	if err != nil {
+		code = e.ERROR
+		slog.Warn("根据分类id查询菜品信息失败！", "Err:", err.Error())
+		ctx.JSON(http.StatusOK, common.Result{Code: code, Msg: e.GetMsg(code)})
 		return
 	}
 	ctx.JSON(http.StatusOK, common.Result{
