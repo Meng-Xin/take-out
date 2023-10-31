@@ -101,7 +101,7 @@ func (dc *DishController) List(ctx *gin.Context) {
 func (dc *DishController) OnOrClose(ctx *gin.Context) {
 	code := e.SUCCESS
 	id, _ := strconv.ParseUint(ctx.Query("id"), 10, 64)
-	status, _ := strconv.Atoi(ctx.Query("status"))
+	status, _ := strconv.Atoi(ctx.Param("status"))
 	// 根据id修改对应菜品的状态
 	err := dc.service.OnOrClose(ctx, id, status)
 	if err != nil {
