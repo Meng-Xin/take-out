@@ -14,6 +14,11 @@ type DishDao struct {
 	db *gorm.DB
 }
 
+func (dd *DishDao) Delete(db *gorm.DB, id uint64) error {
+	err := db.Delete(&model.Dish{Id: id}).Error
+	return err
+}
+
 func (dd *DishDao) Update(db *gorm.DB, dish model.Dish) error {
 	err := db.Model(&dish).Updates(dish).Error
 	return err

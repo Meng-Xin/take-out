@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"strconv"
+	"strings"
 	"take-out/common"
 	"take-out/common/enum"
 	"take-out/internal/api/request"
@@ -18,11 +19,45 @@ type IDishService interface {
 	List(ctx context.Context, categoryId uint64) ([]response.DishListVo, error)
 	OnOrClose(ctx context.Context, id uint64, status int) error
 	Update(ctx context.Context, dto request.DishUpdateDTO) error
+	Delete(ctx context.Context, ids string) error
 }
 
 type DishServiceImpl struct {
 	repo           repository.DishRepo
 	dishFlavorRepo repository.DishFlavorRepo
+}
+
+func (d *DishServiceImpl) Delete(ctx context.Context, ids string) error {
+	// ids 为多个id的组合，以,进行分割，进行批量删除
+	idList := strings.Split(ids, ",")
+	for _, idStr := range idList {
+		// 这里因为循环内部的事务提交，使用匿名函数解决内存泄漏问题。
+		err := func() error {
+			dishId, _ := strconv.ParseUint(idStr, 10, 64)
+			// 开启事务
+			transaction := d.repo.Transaction(ctx)
+			defer func() {
+				if r := recover(); r != nil {
+					transaction.Rollback()
+				}
+			}()
+			// 关联删除菜品口味数据
+			err := d.dishFlavorRepo.DeleteByDishId(transaction, dishId)
+			if err != nil {
+				return err
+			}
+			// 删除菜品
+			err = d.repo.Delete(transaction, dishId)
+			if err != nil {
+				return err
+			}
+			return transaction.Commit().Error
+		}()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (d *DishServiceImpl) Update(ctx context.Context, dto request.DishUpdateDTO) error {

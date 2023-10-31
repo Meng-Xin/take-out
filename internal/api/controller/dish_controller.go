@@ -140,3 +140,23 @@ func (dc *DishController) Update(ctx *gin.Context) {
 		Msg:  e.GetMsg(code),
 	})
 }
+
+// Delete 删除菜品信息
+func (dc *DishController) Delete(ctx *gin.Context) {
+	code := e.SUCCESS
+	ids := ctx.Query("ids")
+	err := dc.service.Delete(ctx, ids)
+	if err != nil {
+		code = e.ERROR
+		slog.Warn("删除菜品信息失败！", "Err:", err.Error())
+		ctx.JSON(http.StatusOK, common.Result{
+			Code: code,
+			Msg:  e.GetMsg(code),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, common.Result{
+		Code: code,
+		Msg:  e.GetMsg(code),
+	})
+}

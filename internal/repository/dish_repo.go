@@ -16,4 +16,5 @@ type DishRepo interface {
 	List(ctx context.Context, categoryId uint64) ([]model.Dish, error)
 	OnOrClose(ctx context.Context, id uint64, status int) error
 	Update(db *gorm.DB, dish model.Dish) error
+	Delete(db *gorm.DB, id uint64) error
 }
