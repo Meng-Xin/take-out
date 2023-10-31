@@ -131,7 +131,7 @@ func (dc *DishController) Update(ctx *gin.Context) {
 	err = dc.service.Update(ctx, dishUpdateDTO)
 	if err != nil {
 		code = e.ERROR
-		slog.Warn("菜品启售或禁售失败！", "Err:", err.Error())
+		slog.Warn("更新菜品信息失败！", "Err:", err.Error())
 		ctx.JSON(http.StatusOK, common.Result{Code: code, Msg: e.GetMsg(code)})
 		return
 	}
