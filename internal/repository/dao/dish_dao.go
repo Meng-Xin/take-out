@@ -14,6 +14,11 @@ type DishDao struct {
 	db *gorm.DB
 }
 
+func (dd *DishDao) Update(db *gorm.DB, dish model.Dish) error {
+	err := db.Model(&dish).Updates(dish).Error
+	return err
+}
+
 func (dd *DishDao) OnOrClose(ctx context.Context, id uint64, status int) error {
 	err := dd.db.WithContext(ctx).Model(&model.Dish{Id: id}).Update("status", status).Error
 	return err

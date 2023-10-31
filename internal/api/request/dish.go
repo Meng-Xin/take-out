@@ -1,6 +1,8 @@
 package request
 
-import "take-out/internal/model"
+import (
+	"take-out/internal/model"
+)
 
 type DishDTO struct {
 	Id          uint64             `json:"id"`
@@ -19,4 +21,15 @@ type DishPageQueryDTO struct {
 	Name       string `json:"name"`       // 分页查询的name
 	CategoryId uint64 `json:"categoryId"` // 分类ID:
 	Status     int    `json:"status"`     // 菜品状态
+}
+
+type DishUpdateDTO struct {
+	Id          uint64             `json:"id" `
+	Name        string             `json:"name"`
+	CategoryId  uint64             `json:"categoryId"`
+	Price       string             `json:"price"`
+	Image       string             `json:"image"`
+	Description string             `json:"description"`
+	Status      int                `json:"status"`
+	Flavors     []model.DishFlavor `json:"flavors"`
 }

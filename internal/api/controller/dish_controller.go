@@ -115,3 +115,28 @@ func (dc *DishController) OnOrClose(ctx *gin.Context) {
 		Msg:  e.GetMsg(code),
 	})
 }
+
+// Update 修改菜品信息
+func (dc *DishController) Update(ctx *gin.Context) {
+	code := e.SUCCESS
+	dishUpdateDTO := request.DishUpdateDTO{}
+	err := ctx.Bind(&dishUpdateDTO)
+	if err != nil {
+		code = e.ERROR
+		slog.Warn("Failed Json Bind", "Err:", err.Error())
+		ctx.JSON(http.StatusOK, common.Result{Code: code, Msg: e.GetMsg(code)})
+		return
+	}
+	// 更新菜品以及菜品口味的关联数据
+	err = dc.service.Update(ctx, dishUpdateDTO)
+	if err != nil {
+		code = e.ERROR
+		slog.Warn("菜品启售或禁售失败！", "Err:", err.Error())
+		ctx.JSON(http.StatusOK, common.Result{Code: code, Msg: e.GetMsg(code)})
+		return
+	}
+	ctx.JSON(http.StatusOK, common.Result{
+		Code: code,
+		Msg:  e.GetMsg(code),
+	})
+}

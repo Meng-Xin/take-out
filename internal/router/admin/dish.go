@@ -26,5 +26,6 @@ func (dr *DishRouter) InitApiRouter(parent *gin.RouterGroup) {
 		privateRouter.GET("/:id", dishCtrl.GetById)
 		privateRouter.GET("/list", dishCtrl.List)
 		privateRouter.POST("/status/:status", dishCtrl.OnOrClose)
+		privateRouter.PUT("", dishCtrl.Update)
 	}
 }

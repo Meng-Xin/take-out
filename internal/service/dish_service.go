@@ -17,11 +17,51 @@ type IDishService interface {
 	GetByIdWithFlavors(ctx context.Context, id uint64) (response.DishVo, error)
 	List(ctx context.Context, categoryId uint64) ([]response.DishListVo, error)
 	OnOrClose(ctx context.Context, id uint64, status int) error
+	Update(ctx context.Context, dto request.DishUpdateDTO) error
 }
 
 type DishServiceImpl struct {
 	repo           repository.DishRepo
 	dishFlavorRepo repository.DishFlavorRepo
+}
+
+func (d *DishServiceImpl) Update(ctx context.Context, dto request.DishUpdateDTO) error {
+	price, _ := strconv.ParseFloat(dto.Price, 10)
+	dish := model.Dish{
+		Id:          dto.Id,
+		Name:        dto.Name,
+		CategoryId:  dto.CategoryId,
+		Price:       price,
+		Image:       dto.Image,
+		Description: dto.Description,
+		Status:      dto.Status,
+		Flavors:     dto.Flavors,
+	}
+	// 开启事务
+	transaction := d.repo.Transaction(ctx)
+	defer func() {
+		if r := recover(); r != nil {
+			transaction.Rollback()
+		}
+	}()
+	// 更新菜品信息
+	err := d.repo.Update(transaction, dish)
+	if err != nil {
+		return err
+	}
+	// 更新菜品的口味分两步： 1.先删除原有的所有关联数据，2.再插入新的口味数据
+	err = d.dishFlavorRepo.DeleteByDishId(transaction, dish.Id)
+	if err != nil {
+		return err
+	}
+	if len(dish.Flavors) != 0 {
+		err = d.dishFlavorRepo.InsertBatch(transaction, dish.Flavors)
+		if err != nil {
+			return err
+		}
+	}
+
+	return transaction.Commit().Error
 }
 
 func (d *DishServiceImpl) OnOrClose(ctx context.Context, id uint64, status int) error {
