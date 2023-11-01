@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"strconv"
+	"take-out/common"
 	"take-out/common/enum"
 	"take-out/internal/api/request"
 	"take-out/internal/model"
@@ -11,6 +12,7 @@ import (
 
 type ISetMealService interface {
 	SaveWithDish(ctx context.Context, dto request.SetMealDTO) error
+	PageQuery(ctx context.Context, dto request.SetMealPageQueryDTO) (*common.PageResult, error)
 }
 
 type SetMealServiceImpl struct {
@@ -18,8 +20,16 @@ type SetMealServiceImpl struct {
 	setMealDishRepo repository.SetMealDishRepo
 }
 
+func (s *SetMealServiceImpl) PageQuery(ctx context.Context, dto request.SetMealPageQueryDTO) (*common.PageResult, error) {
+	result, err := s.repo.PageQuery(ctx, dto)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
 // SaveWithDish 保存套餐和菜品信息
-func (s SetMealServiceImpl) SaveWithDish(ctx context.Context, dto request.SetMealDTO) error {
+func (s *SetMealServiceImpl) SaveWithDish(ctx context.Context, dto request.SetMealDTO) error {
 	// 转换dto为model开启事务进行保存
 	price, _ := strconv.ParseFloat(dto.Price, 10)
 	setmeal := model.SetMeal{
