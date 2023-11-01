@@ -16,6 +16,7 @@ func routerInit() *gin.Engine {
 		allRouter.CategoryRouter.InitApiRouter(admin)
 		allRouter.DishRouter.InitApiRouter(admin)
 		allRouter.CommonRouter.InitApiRouter(admin)
+		allRouter.SetMealRouter.InitApiRouter(admin)
 	}
 	return r
 }

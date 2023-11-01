@@ -7,6 +7,7 @@ type RouterGroup struct {
 	admin.CategoryRouter
 	admin.DishRouter
 	admin.CommonRouter
+	admin.SetMealRouter
 }
 
 var AllRouter = new(RouterGroup)
