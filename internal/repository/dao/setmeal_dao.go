@@ -21,13 +21,13 @@ func (s *SetMealDao) PageQuery(ctx context.Context, dto request.SetMealPageQuery
 	query := s.db.WithContext(ctx).Model(&model.SetMeal{})
 	// 动态构造查询条件
 	if dto.CategoryId != 0 {
-		query.Where("category_id = ?", dto.CategoryId)
+		query = query.Where("setmeal.category_id = ?", dto.CategoryId)
 	}
 	if dto.Name != "" {
-		query.Where("name LIKE ", "%"+dto.Name+"%")
+		query = query.Where("setmeal.name LIKE ?", "%"+dto.Name+"%")
 	}
 	if dto.Status != 0 {
-		query.Where("status = ?", dto.Status)
+		query = query.Where("setmeal.status = ?", dto.Status)
 	}
 	if err := query.Count(&pageResult.Total).Error; err != nil {
 		return nil, err
