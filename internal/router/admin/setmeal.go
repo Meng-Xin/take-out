@@ -22,5 +22,6 @@ func (sr *SetMealRouter) InitApiRouter(parent *gin.RouterGroup) {
 	)
 	{
 		privateRouter.POST("", setmealCtrl.SaveWithDish)
+		privateRouter.GET("/page", setmealCtrl.PageQuery)
 	}
 }
