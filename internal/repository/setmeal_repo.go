@@ -8,5 +8,5 @@ import (
 
 type SetMealRepo interface {
 	Transaction(ctx context.Context) *gorm.DB
-	Insert(db *gorm.DB, meal model.SetMeal) error
+	Insert(db *gorm.DB, meal *model.SetMeal) error
 }

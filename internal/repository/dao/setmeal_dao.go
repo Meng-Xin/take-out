@@ -15,7 +15,7 @@ func (s *SetMealDao) Transaction(ctx context.Context) *gorm.DB {
 	return s.db.WithContext(ctx).Begin()
 }
 
-func (s *SetMealDao) Insert(db *gorm.DB, meal model.SetMeal) error {
+func (s *SetMealDao) Insert(db *gorm.DB, meal *model.SetMeal) error {
 	err := db.Create(&meal).Error
 	return err
 }
