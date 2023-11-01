@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"strconv"
 	"take-out/common/enum"
 	"take-out/internal/api/request"
 	"take-out/internal/model"
@@ -20,10 +21,12 @@ type SetMealServiceImpl struct {
 // SaveWithDish 保存套餐和菜品信息
 func (s SetMealServiceImpl) SaveWithDish(ctx context.Context, dto request.SetMealDTO) error {
 	// 转换dto为model开启事务进行保存
+	price, _ := strconv.ParseFloat(dto.Price, 10)
 	setmeal := model.SetMeal{
+		Id:          dto.Id,
 		CategoryId:  dto.CategoryId,
 		Name:        dto.Name,
-		Price:       dto.Price,
+		Price:       price,
 		Status:      enum.ENABLE,
 		Description: dto.Description,
 		Image:       dto.Image,
@@ -36,13 +39,13 @@ func (s SetMealServiceImpl) SaveWithDish(ctx context.Context, dto request.SetMea
 		}
 	}()
 	// 先插入套餐数据信息，并得到返回的主键id值
-	err := s.repo.Insert(transaction, setmeal)
+	err := s.repo.Insert(transaction, &setmeal)
 	if err != nil {
 		return err
 	}
 	// 再对中间表中套餐内的菜品信息附加主键id
 	for _, setmealDish := range dto.SetMealDishs {
-		setmealDish.SetMealId = setmeal.Id
+		setmealDish.SetmealId = setmeal.Id
 	}
 	// 向中间表插入数据
 	err = s.setMealDishRepo.InsertBatch(transaction, dto.SetMealDishs)
