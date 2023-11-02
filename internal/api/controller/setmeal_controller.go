@@ -82,3 +82,21 @@ func (sc *SetMealController) OnOrClose(ctx *gin.Context) {
 		Msg:  e.GetMsg(code),
 	})
 }
+
+// GetByIdWithDish 根据套餐id获取套餐和关联菜品信息
+func (sc *SetMealController) GetByIdWithDish(ctx *gin.Context) {
+	code := e.SUCCESS
+	setMealId, _ := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	// 获取套餐详情
+	resp, err := sc.service.GetByIdWithDish(ctx, setMealId)
+	if err != nil {
+		global.Log.Warn("GetByIdWithDish 根据套餐id获取套餐和关联菜品信息", "Err:", err.Error())
+		e.Send(ctx, e.ERROR)
+		return
+	}
+	ctx.JSON(http.StatusOK, common.Result{
+		Code: code,
+		Data: resp,
+		Msg:  e.GetMsg(code),
+	})
+}

@@ -14,6 +14,12 @@ type SetMealDao struct {
 	db *gorm.DB
 }
 
+func (s *SetMealDao) GetByIdWithDish(transaction *gorm.DB, id uint64) (model.SetMeal, error) {
+	var setMeal model.SetMeal
+	err := transaction.First(&setMeal, id).Error
+	return setMeal, err
+}
+
 func (s *SetMealDao) SetStatus(ctx context.Context, id uint64, status int) error {
 	err := s.db.WithContext(ctx).Model(&model.SetMeal{Id: id}).Update("status", status).Error
 	return err

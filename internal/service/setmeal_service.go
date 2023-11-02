@@ -6,6 +6,7 @@ import (
 	"take-out/common"
 	"take-out/common/enum"
 	"take-out/internal/api/request"
+	"take-out/internal/api/response"
 	"take-out/internal/model"
 	"take-out/internal/repository"
 )
@@ -14,11 +15,50 @@ type ISetMealService interface {
 	SaveWithDish(ctx context.Context, dto request.SetMealDTO) error
 	PageQuery(ctx context.Context, dto request.SetMealPageQueryDTO) (*common.PageResult, error)
 	OnOrClose(ctx context.Context, id uint64, status int) error
+	GetByIdWithDish(ctx context.Context, dishId uint64) (response.SetMealWithDishByIdVo, error)
 }
 
 type SetMealServiceImpl struct {
 	repo            repository.SetMealRepo
 	setMealDishRepo repository.SetMealDishRepo
+}
+
+func (s *SetMealServiceImpl) GetByIdWithDish(ctx context.Context, setMealId uint64) (response.SetMealWithDishByIdVo, error) {
+	// 开启事务
+	transaction := s.repo.Transaction(ctx)
+	defer func() {
+		if err := recover(); err != nil {
+			transaction.Rollback()
+		}
+	}()
+	// 单独查询套餐
+	setMeal, err := s.repo.GetByIdWithDish(transaction, setMealId)
+	if err != nil {
+		return response.SetMealWithDishByIdVo{}, err
+	}
+	// 查询中间表记录的套餐菜品信息
+	dishList, err := s.setMealDishRepo.GetBySetMealId(transaction, setMealId)
+	if err != nil {
+		return response.SetMealWithDishByIdVo{}, err
+	}
+	// 事务提交
+	if err = transaction.Commit().Error; err != nil {
+		return response.SetMealWithDishByIdVo{}, err
+	}
+	// 数据组装
+	setMealVo := response.SetMealWithDishByIdVo{
+		Id:            setMeal.Id,
+		CategoryId:    setMeal.CategoryId,
+		CategoryName:  setMeal.Name,
+		Description:   setMeal.Description,
+		Image:         setMeal.Image,
+		Name:          setMeal.Name,
+		Price:         setMeal.Price,
+		Status:        setMeal.Status,
+		SetmealDishes: dishList,
+		UpdateTime:    setMeal.UpdateTime,
+	}
+	return setMealVo, nil
 }
 
 func (s *SetMealServiceImpl) OnOrClose(ctx context.Context, id uint64, status int) error {
