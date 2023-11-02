@@ -1,6 +1,9 @@
 package response
 
-import "time"
+import (
+	"take-out/internal/model"
+	"time"
+)
 
 type SetMealPageQueryVo struct {
 	Id           uint64    `json:"id" `          // 主键id
@@ -15,4 +18,17 @@ type SetMealPageQueryVo struct {
 	CreateUser   uint64    `json:"createUser"`   // 创建用户
 	UpdateUser   uint64    `json:"updateUser"`   // 更新用户
 	CategoryName string    `json:"categoryName"` // 分类名称
+}
+
+type SetMealWithDishByIdVo struct {
+	Id            uint64              `json:"id"`
+	CategoryId    uint64              `json:"categoryId"`
+	CategoryName  string              `json:"categoryName"`
+	Description   string              `json:"description"`
+	Image         string              `json:"image"`
+	Name          string              `json:"name"`
+	Price         float64             `json:"price"`
+	SetmealDishes []model.SetMealDish `json:"setmealDishes"`
+	Status        int                 `json:"status"`
+	UpdateTime    time.Time           `json:"updateTime"`
 }
