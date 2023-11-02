@@ -64,3 +64,21 @@ func (sc *SetMealController) PageQuery(ctx *gin.Context) {
 		Msg:  e.GetMsg(code),
 	})
 }
+
+// OnOrClose 套餐启用禁用
+func (sc *SetMealController) OnOrClose(ctx *gin.Context) {
+	code := e.SUCCESS
+	id, _ := strconv.ParseUint(ctx.Query("id"), 10, 64)
+	status, _ := strconv.Atoi(ctx.Param("status"))
+	// 设置套餐状态
+	err := sc.service.OnOrClose(ctx, id, status)
+	if err != nil {
+		global.Log.Warn("OnOrClose 套餐启用禁用失败！", "Err:", err.Error())
+		e.Send(ctx, e.ERROR)
+		return
+	}
+	ctx.JSON(http.StatusOK, common.Result{
+		Code: code,
+		Msg:  e.GetMsg(code),
+	})
+}
