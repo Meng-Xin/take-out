@@ -10,6 +10,8 @@
 **需求文档：**
 [苍穹外卖 (apifox.com)](https://apifox.com/apidoc/shared-93dd7a4f-adbc-4d2b-b6f5-24976908bc1c)
 
+**学习交流群**
+> `企鹅群`：828448599
 ## 功能模块介绍
 
 ### 管理端
