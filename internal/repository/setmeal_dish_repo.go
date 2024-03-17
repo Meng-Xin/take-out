@@ -1,11 +1,11 @@
 package repository
 
 import (
-	"gorm.io/gorm"
+	"take-out/global/tx"
 	"take-out/internal/model"
 )
 
 type SetMealDishRepo interface {
-	InsertBatch(db *gorm.DB, setmealDishs []model.SetMealDish) error
-	GetBySetMealId(db *gorm.DB, SetMealId uint64) ([]model.SetMealDish, error)
+	InsertBatch(db tx.Transaction, setmealDishs []model.SetMealDish) error
+	GetBySetMealId(db tx.Transaction, SetMealId uint64) ([]model.SetMealDish, error)
 }
