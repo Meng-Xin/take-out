@@ -24,8 +24,12 @@ type SetMealServiceImpl struct {
 }
 
 func (s *SetMealServiceImpl) GetByIdWithDish(ctx context.Context, setMealId uint64) (response.SetMealWithDishByIdVo, error) {
-	// 开启事务
+	// 获取事务
 	transaction := s.repo.Transaction(ctx)
+	// 开始事务
+	if err := transaction.Begin(); err != nil {
+		return response.SetMealWithDishByIdVo{}, err
+	}
 	defer func() {
 		if err := recover(); err != nil {
 			transaction.Rollback()
@@ -42,7 +46,7 @@ func (s *SetMealServiceImpl) GetByIdWithDish(ctx context.Context, setMealId uint
 		return response.SetMealWithDishByIdVo{}, err
 	}
 	// 事务提交
-	if err = transaction.Commit().Error; err != nil {
+	if err = transaction.Commit(); err != nil {
 		return response.SetMealWithDishByIdVo{}, err
 	}
 	// 数据组装
@@ -89,6 +93,10 @@ func (s *SetMealServiceImpl) SaveWithDish(ctx context.Context, dto request.SetMe
 	}
 	// 开启事务进行存储
 	transaction := s.repo.Transaction(ctx)
+	// 开始事务
+	if err := transaction.Begin(); err != nil {
+		return err
+	}
 	defer func() {
 		if err := recover(); err != nil {
 			transaction.Rollback()
@@ -108,7 +116,7 @@ func (s *SetMealServiceImpl) SaveWithDish(ctx context.Context, dto request.SetMe
 	if err != nil {
 		return err
 	}
-	return transaction.Commit().Error
+	return transaction.Commit()
 }
 
 func NewSetMealService(repo repository.SetMealRepo, setMealDishRepo repository.SetMealDishRepo) ISetMealService {
