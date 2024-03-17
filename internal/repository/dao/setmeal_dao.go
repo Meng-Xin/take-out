@@ -4,6 +4,7 @@ import (
 	"context"
 	"gorm.io/gorm"
 	"take-out/common"
+	"take-out/global/tx"
 	"take-out/internal/api/request"
 	"take-out/internal/api/response"
 	"take-out/internal/model"
@@ -14,9 +15,13 @@ type SetMealDao struct {
 	db *gorm.DB
 }
 
-func (s *SetMealDao) GetByIdWithDish(transaction *gorm.DB, id uint64) (model.SetMeal, error) {
+func (s *SetMealDao) GetByIdWithDish(transactions tx.Transaction, id uint64) (model.SetMeal, error) {
+	db, err := tx.GetGormDB(transactions)
+	if err != nil {
+		return model.SetMeal{}, err
+	}
 	var setMeal model.SetMeal
-	err := transaction.First(&setMeal, id).Error
+	err = db.First(&setMeal, id).Error
 	return setMeal, err
 }
 
@@ -56,12 +61,16 @@ func (s *SetMealDao) PageQuery(ctx context.Context, dto request.SetMealPageQuery
 	return &pageResult, nil
 }
 
-func (s *SetMealDao) Transaction(ctx context.Context) *gorm.DB {
-	return s.db.WithContext(ctx).Begin()
+func (s *SetMealDao) Transaction(ctx context.Context) tx.Transaction {
+	return tx.NewGormTransaction(s.db, ctx)
 }
 
-func (s *SetMealDao) Insert(db *gorm.DB, meal *model.SetMeal) error {
-	err := db.Create(&meal).Error
+func (s *SetMealDao) Insert(transactions tx.Transaction, meal *model.SetMeal) error {
+	db, err := tx.GetGormDB(transactions)
+	if err != nil {
+		return err
+	}
+	err = db.Create(&meal).Error
 	return err
 }
 
