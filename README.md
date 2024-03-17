@@ -107,6 +107,7 @@ $ docker-compose up -d
 ## 项目架构图
 
 ```xquery
+client/ #WEB客户端
 common/ #存放通用内容的包
  |---e #存放自定义错误、错误code、code对应消息。
   |---code.go
