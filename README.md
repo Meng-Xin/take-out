@@ -12,6 +12,13 @@
 
 **学习交流群**
 > `企鹅群`：828448599
+
+## QuickStart
+1.  切换到 web 前端目录,启动nginx.exe
+2.  启动Redis
+3.  启动Golang服务端
+4.  访问 http:localhost
+
 ## 功能模块介绍
 
 ### 管理端
