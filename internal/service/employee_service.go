@@ -97,19 +97,22 @@ func (ei *EmployeeImpl) EditPassword(ctx context.Context, employeeEdit request.E
 	employee, err := ei.repo.GetById(ctx, employeeEdit.EmpId)
 	if err != nil {
 		return err
+
+
 	}
 	// 校验用户老密码
 	if employee == nil {
 		return e.Error_ACCOUNT_NOT_FOUND
 	}
-	newHashPassword := utils.MD5V(employeeEdit.OldPassword, "", 0)
-	if employee.Password != newHashPassword {
+	oldHashPassword := utils.MD5V(employeeEdit.OldPassword, "", 0)
+	if employee.Password != oldHashPassword {
 		return e.Error_PASSWORD_ERROR
 	}
 	// 修改员工密码
+	newHashPassword := utils.MD5V(employeeEdit.NewPassword, "", 0)  // 使用新密码生成哈希值
 	err = ei.repo.Update(ctx, model.Employee{
 		Id:       employeeEdit.EmpId,
-		Password: employeeEdit.NewPassword,
+		Password: newHashPassword,
 	})
 	return err
 }
