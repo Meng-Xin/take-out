@@ -107,7 +107,7 @@ func (ei *EmployeeImpl) EditPassword(ctx context.Context, employeeEdit request.E
 		return e.Error_PASSWORD_ERROR
 	}
 	// 修改员工密码
-	err = ei.repo.更新(ctx, model.Employee{
+	err = ei.repo.Update(ctx, model.Employee{
 		Id:       employeeEdit.EmpId,
 		Password: employeeEdit.NewPassword,
 	})
