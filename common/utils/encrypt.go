@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 )
 
-// MD5V 对目标字符串取Hash slat：加盐字段，iteration：hash迭代轮数。
+// MD5V 对目标字符串取Hash salt：加盐字段，iteration：hash迭代轮数。
 func MD5V(str string, salt string, iteration int) string {
 	b := []byte(str)
 	s := []byte(salt)
