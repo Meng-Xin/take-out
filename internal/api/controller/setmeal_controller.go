@@ -46,11 +46,12 @@ func (sc *SetMealController) PageQuery(ctx *gin.Context) {
 	code := e.SUCCESS
 	// 数据组装
 	var pageQueryDTO request.SetMealPageQueryDTO
-	pageQueryDTO.CategoryId, _ = strconv.ParseUint(ctx.Query("categoryId"), 10, 64)
-	pageQueryDTO.Name = ctx.Query("name")
-	pageQueryDTO.Status, _ = strconv.Atoi(ctx.Query("status"))
-	pageQueryDTO.Page, _ = strconv.Atoi(ctx.Query("page"))
-	pageQueryDTO.PageSize, _ = strconv.Atoi(ctx.Query("pageSize"))
+	err := ctx.Bind(&pageQueryDTO)
+	if err != nil {
+		global.Log.Error("PageQuery invalid params err:", err.Error())
+		e.Send(ctx, e.ERROR)
+		return
+	}
 	// 分页查询
 	result, err := sc.service.PageQuery(ctx, pageQueryDTO)
 	if err != nil {

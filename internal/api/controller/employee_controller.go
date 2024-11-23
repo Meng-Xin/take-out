@@ -124,9 +124,12 @@ func (ec *EmployeeController) AddEmployee(ctx *gin.Context) {
 func (ec *EmployeeController) PageQuery(ctx *gin.Context) {
 	code := e.SUCCESS
 	var employeePageQueryDTO request.EmployeePageQueryDTO
-	employeePageQueryDTO.Name = ctx.Query("name")
-	employeePageQueryDTO.Page, _ = strconv.Atoi(ctx.Query("page"))
-	employeePageQueryDTO.PageSize, _ = strconv.Atoi(ctx.Query("pageSize"))
+	err := ctx.Bind(&employeePageQueryDTO)
+	if err != nil {
+		global.Log.Error("AddEmployee  invalid params err:", err.Error())
+		e.Send(ctx, e.ERROR)
+		return
+	}
 	// 进行分页查询
 	pageResult, err := ec.service.PageQuery(ctx, employeePageQueryDTO)
 	if err != nil {

@@ -38,14 +38,17 @@ func (cc *CategoryController) AddCategory(ctx *gin.Context) {
 func (cc *CategoryController) PageQuery(ctx *gin.Context) {
 	code := e.SUCCESS
 	var categoryPageDTO request.CategoryPageQueryDTO
-	categoryPageDTO.Name = ctx.Query("name")
-	categoryPageDTO.Page, _ = strconv.Atoi(ctx.Query("page"))
-	categoryPageDTO.PageSize, _ = strconv.Atoi(ctx.Query("pageSize"))
-	categoryPageDTO.Cate, _ = strconv.Atoi(ctx.Query("type"))
+	err := ctx.Bind(&categoryPageDTO)
+	if err != nil {
+		global.Log.Warn("Category invalid params failed ", err.Error())
+		e.Send(ctx, e.ERROR)
+		return
+	}
 	query, err := cc.service.PageQuery(ctx, categoryPageDTO)
 	if err != nil {
-		code = e.ERROR
 		global.Log.Warn("Category PageQuery failed ", err.Error())
+		e.Send(ctx, e.ERROR)
+		return
 	}
 	ctx.JSON(http.StatusOK, common.Result{
 		Code: code,

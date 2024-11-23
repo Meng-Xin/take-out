@@ -16,11 +16,11 @@ type DishDTO struct {
 }
 
 type DishPageQueryDTO struct {
-	Page       int    `json:"page"`       // 分页查询的页数
-	PageSize   int    `json:"pageSize"`   // 分页查询的页容量
-	Name       string `json:"name"`       // 分页查询的name
-	CategoryId uint64 `json:"categoryId"` // 分类ID:
-	Status     int    `json:"status"`     // 菜品状态
+	Page       int    `form:"page"`       // 分页查询的页数
+	PageSize   int    `form:"pageSize"`   // 分页查询的页容量
+	Name       string `form:"name"`       // 分页查询的name
+	CategoryId uint64 `form:"categoryId"` // 分类ID:
+	Status     int    `form:"status"`     // 菜品状态
 }
 
 type DishUpdateDTO struct {

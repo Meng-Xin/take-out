@@ -21,7 +21,7 @@ type EmployeeDTO struct {
 }
 
 type EmployeePageQueryDTO struct {
-	Name     string `json:"name"`     // 分页查询的name
-	Page     int    `json:"page"`     // 分页查询的页数
-	PageSize int    `json:"pageSize"` // 分页查询的页容量
+	Name     string `form:"name"`     // 分页查询的name
+	Page     int    `form:"page"`     // 分页查询的页数
+	PageSize int    `form:"pageSize"` // 分页查询的页容量
 }

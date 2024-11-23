@@ -8,8 +8,8 @@ type CategoryDTO struct {
 }
 
 type CategoryPageQueryDTO struct {
-	Name     string `json:"name"`     // 分页查询的name
-	Page     int    `json:"page"`     // 分页查询的页数
-	PageSize int    `json:"pageSize"` // 分页查询的页容量
-	Cate     int    `json:"type"`     // 分类类型：1为菜品分类，2为套餐分类
+	Name     string `form:"name"`     // 分页查询的name
+	Page     int    `form:"page"`     // 分页查询的页数
+	PageSize int    `form:"pageSize"` // 分页查询的页容量
+	Cate     int    `form:"type"`     // 分类类型：1为菜品分类，2为套餐分类
 }
