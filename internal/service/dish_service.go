@@ -2,14 +2,17 @@ package service
 
 import (
 	"context"
+	"github.com/spf13/cast"
+	"gorm.io/gorm"
 	"strconv"
 	"strings"
 	"take-out/common"
 	"take-out/common/enum"
+	"take-out/global"
 	"take-out/internal/api/request"
 	"take-out/internal/api/response"
 	"take-out/internal/model"
-	"take-out/internal/repository"
+	"take-out/internal/repository/dao"
 )
 
 type IDishService interface {
@@ -23,36 +26,26 @@ type IDishService interface {
 }
 
 type DishServiceImpl struct {
-	repo           repository.DishRepo
-	dishFlavorRepo repository.DishFlavorRepo
+	repo           *dao.DishDao
+	dishFlavorRepo *dao.DishFlavorDao
 }
 
 func (d *DishServiceImpl) Delete(ctx context.Context, ids string) error {
 	// ids 为多个id的组合，以,进行分割，进行批量删除
 	idList := strings.Split(ids, ",")
 	for _, idStr := range idList {
-		// 这里因为循环内部的事务提交，使用匿名函数解决内存泄漏问题。
-		err := func() error {
-			dishId, _ := strconv.ParseUint(idStr, 10, 64)
-			// 开启事务
-			transaction := d.repo.Transaction(ctx)
-			defer func() {
-				if r := recover(); r != nil {
-					transaction.Rollback()
-				}
-			}()
-			// 关联删除菜品口味数据
-			err := d.dishFlavorRepo.DeleteByDishId(transaction, dishId)
+		err := global.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+			dishId := cast.ToUint64(idStr)
+			err := d.dishFlavorRepo.WithTx(tx).DeleteByDishId(ctx, dishId)
 			if err != nil {
 				return err
 			}
-			// 删除菜品
-			err = d.repo.Delete(transaction, dishId)
+			err = d.repo.WithTx(tx).Delete(ctx, dishId)
 			if err != nil {
 				return err
 			}
-			return transaction.Commit().Error
-		}()
+			return nil
+		})
 		if err != nil {
 			return err
 		}
@@ -61,7 +54,7 @@ func (d *DishServiceImpl) Delete(ctx context.Context, ids string) error {
 }
 
 func (d *DishServiceImpl) Update(ctx context.Context, dto request.DishUpdateDTO) error {
-	price, _ := strconv.ParseFloat(dto.Price, 10)
+	price := cast.ToFloat64(dto.Price)
 	dish := model.Dish{
 		Id:          dto.Id,
 		Name:        dto.Name,
@@ -73,30 +66,27 @@ func (d *DishServiceImpl) Update(ctx context.Context, dto request.DishUpdateDTO)
 		Flavors:     dto.Flavors,
 	}
 	// 开启事务
-	transaction := d.repo.Transaction(ctx)
-	defer func() {
-		if r := recover(); r != nil {
-			transaction.Rollback()
-		}
-	}()
-	// 更新菜品信息
-	err := d.repo.Update(transaction, dish)
-	if err != nil {
-		return err
-	}
-	// 更新菜品的口味分两步： 1.先删除原有的所有关联数据，2.再插入新的口味数据
-	err = d.dishFlavorRepo.DeleteByDishId(transaction, dish.Id)
-	if err != nil {
-		return err
-	}
-	if len(dish.Flavors) != 0 {
-		err = d.dishFlavorRepo.InsertBatch(transaction, dish.Flavors)
+	err := global.DB.Transaction(func(tx *gorm.DB) error {
+		// 更新菜品信息
+		err := d.repo.WithTx(tx).Update(ctx, dish)
 		if err != nil {
 			return err
 		}
-	}
+		// 更新菜品的口味分两步： 1.先删除原有的所有关联数据，2.再插入新的口味数据
+		err = d.dishFlavorRepo.WithTx(tx).DeleteByDishId(ctx, dish.Id)
+		if err != nil {
+			return err
+		}
+		if len(dish.Flavors) != 0 {
+			err = d.dishFlavorRepo.WithTx(tx).InsertBatch(ctx, dish.Flavors)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 
-	return transaction.Commit().Error
+	return err
 }
 
 func (d *DishServiceImpl) OnOrClose(ctx context.Context, id uint64, status int) error {
@@ -166,28 +156,26 @@ func (d *DishServiceImpl) AddDishWithFlavors(ctx context.Context, dto request.Di
 		Description: dto.Description,
 		Status:      enum.ENABLE,
 	}
-	// 开启事务，出现问题直接回滚
-	transaction := d.repo.Transaction(ctx)
-	defer func() {
-		if r := recover(); r != nil {
-			transaction.Rollback()
+	// 开启事务
+	err := global.DB.Transaction(func(tx *gorm.DB) error {
+		// 2.先新增菜品数据，再新增口味数据
+		err := d.repo.WithTx(tx).Insert(ctx, &dish)
+		if err != nil {
+			return err
 		}
-	}()
-	// 2.先新增菜品数据，再新增口味数据
-	if err := d.repo.Insert(transaction, &dish); err != nil {
-		return err
-	}
-	// 为口味数据附加菜品id
-	for i, _ := range dto.Flavors {
-		dto.Flavors[i].DishId = dish.Id
-	}
-	// 3.使用返回的事务指针动态构建 dishFlavor，因为它只依附于动态返回的事务指针。
-	if err := d.dishFlavorRepo.InsertBatch(transaction, dto.Flavors); err != nil {
-		return err
-	}
-	return transaction.Commit().Error
+		// 为口味数据附加菜品id
+		for i, _ := range dto.Flavors {
+			dto.Flavors[i].DishId = dish.Id
+		}
+		err = d.dishFlavorRepo.WithTx(tx).InsertBatch(ctx, dto.Flavors)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	return err
 }
 
-func NewDishService(repo repository.DishRepo, dishFlavorRepo repository.DishFlavorRepo) IDishService {
+func NewDishService(repo *dao.DishDao, dishFlavorRepo *dao.DishFlavorDao) IDishService {
 	return &DishServiceImpl{repo: repo, dishFlavorRepo: dishFlavorRepo}
 }

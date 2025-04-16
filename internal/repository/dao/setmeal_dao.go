@@ -4,30 +4,32 @@ import (
 	"context"
 	"gorm.io/gorm"
 	"take-out/common"
-	"take-out/global/tx"
+	"take-out/common/e"
+	"take-out/common/retcode"
 	"take-out/internal/api/request"
 	"take-out/internal/api/response"
 	"take-out/internal/model"
-	"take-out/internal/repository"
 )
 
 type SetMealDao struct {
 	db *gorm.DB
 }
 
-func (s *SetMealDao) GetByIdWithDish(transactions tx.Transaction, id uint64) (model.SetMeal, error) {
-	db, err := tx.GetGormDB(transactions)
-	if err != nil {
-		return model.SetMeal{}, err
-	}
+func (s *SetMealDao) GetByIdWithDish(ctx context.Context, id uint64) (*model.SetMeal, error) {
 	var setMeal model.SetMeal
-	err = db.First(&setMeal, id).Error
-	return setMeal, err
+	err := s.db.WithContext(ctx).First(&setMeal, id).Error
+	if err != nil {
+		return nil, retcode.NewError(e.MysqlERR, "Get setMeal failed")
+	}
+	return &setMeal, nil
 }
 
 func (s *SetMealDao) SetStatus(ctx context.Context, id uint64, status int) error {
 	err := s.db.WithContext(ctx).Model(&model.SetMeal{Id: id}).Update("status", status).Error
-	return err
+	if err != nil {
+		return retcode.NewError(e.MysqlERR, "Update setMeal failed")
+	}
+	return nil
 }
 
 func (s *SetMealDao) PageQuery(ctx context.Context, dto request.SetMealPageQueryDTO) (*common.PageResult, error) {
@@ -49,31 +51,31 @@ func (s *SetMealDao) PageQuery(ctx context.Context, dto request.SetMealPageQuery
 		return nil, err
 	}
 	// 分页查询构造
-	if err := query.Scopes(pageResult.Paginate(&dto.Page, &dto.PageSize)).
+	err := query.Scopes(pageResult.Paginate(&dto.Page, &dto.PageSize)).
 		Select("setmeal.*,c.name as category_name").
 		Joins("LEFT JOIN category c ON setmeal.category_id = c.id").
 		Order("create_time desc").
-		Scan(&setmealPageQueryVo).Error; err != nil {
-		return nil, err
+		Scan(&setmealPageQueryVo).Error
+	if err != nil {
+		return nil, retcode.NewError(e.MysqlERR, "Get setMeal List failed")
 	}
 	// 整合数据下发
 	pageResult.Records = setmealPageQueryVo
 	return &pageResult, nil
 }
 
-func (s *SetMealDao) Transaction(ctx context.Context) tx.Transaction {
-	return tx.NewGormTransaction(s.db, ctx)
-}
-
-func (s *SetMealDao) Insert(transactions tx.Transaction, meal *model.SetMeal) error {
-	db, err := tx.GetGormDB(transactions)
+func (s *SetMealDao) Insert(ctx context.Context, meal *model.SetMeal) error {
+	err := s.db.WithContext(ctx).Create(&meal).Error
 	if err != nil {
-		return err
+		return retcode.NewError(e.MysqlERR, "Create setMeal failed")
 	}
-	err = db.Create(&meal).Error
-	return err
+	return nil
 }
 
-func NewSetMealDao(db *gorm.DB) repository.SetMealRepo {
+func NewSetMealDao(db *gorm.DB) *SetMealDao {
+	return &SetMealDao{db: db}
+}
+
+func (s *SetMealDao) WithTx(db *gorm.DB) *SetMealDao {
 	return &SetMealDao{db: db}
 }

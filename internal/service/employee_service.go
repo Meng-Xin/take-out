@@ -10,7 +10,7 @@ import (
 	"take-out/internal/api/request"
 	"take-out/internal/api/response"
 	"take-out/internal/model"
-	"take-out/internal/repository"
+	"take-out/internal/repository/dao"
 )
 
 type IEmployeeService interface {
@@ -21,17 +21,20 @@ type IEmployeeService interface {
 	PageQuery(ctx context.Context, dto request.EmployeePageQueryDTO) (*common.PageResult, error)
 	SetStatus(ctx context.Context, id uint64, status int) error
 	UpdateEmployee(ctx context.Context, dto request.EmployeeDTO) error
-	GetById(ctx context.Context, id uint64) (model.Employee, error)
+	GetById(ctx context.Context, id uint64) (*model.Employee, error)
 }
 
 type EmployeeImpl struct {
-	repo repository.EmployeeRepo
+	repo *dao.EmployeeDao
 }
 
-func (ei *EmployeeImpl) GetById(ctx context.Context, id uint64) (model.Employee, error) {
+func (ei *EmployeeImpl) GetById(ctx context.Context, id uint64) (*model.Employee, error) {
 	employee, err := ei.repo.GetById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
 	employee.Password = "***"
-	return *employee, err
+	return employee, err
 }
 
 func (ei *EmployeeImpl) UpdateEmployee(ctx context.Context, dto request.EmployeeDTO) error {
@@ -98,7 +101,6 @@ func (ei *EmployeeImpl) EditPassword(ctx context.Context, employeeEdit request.E
 	if err != nil {
 		return err
 
-
 	}
 	// 校验用户老密码
 	if employee == nil {
@@ -109,7 +111,7 @@ func (ei *EmployeeImpl) EditPassword(ctx context.Context, employeeEdit request.E
 		return e.Error_PASSWORD_ERROR
 	}
 	// 修改员工密码
-	newHashPassword := utils.MD5V(employeeEdit.NewPassword, "", 0)  // 使用新密码生成哈希值
+	newHashPassword := utils.MD5V(employeeEdit.NewPassword, "", 0) // 使用新密码生成哈希值
 	err = ei.repo.Update(ctx, model.Employee{
 		Id:       employeeEdit.EmpId,
 		Password: newHashPassword,
@@ -154,6 +156,6 @@ func (ei *EmployeeImpl) Login(ctx context.Context, employeeLogin request.Employe
 	return &resp, nil
 }
 
-func NewEmployeeService(repo repository.EmployeeRepo) IEmployeeService {
+func NewEmployeeService(repo *dao.EmployeeDao) IEmployeeService {
 	return &EmployeeImpl{repo: repo}
 }

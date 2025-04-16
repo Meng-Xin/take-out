@@ -2,10 +2,9 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
-	"net/http"
+	"github.com/spf13/cast"
 	"strconv"
-	"take-out/common"
-	"take-out/common/e"
+	"take-out/common/retcode"
 	"take-out/global"
 	"take-out/internal/api/request"
 	"take-out/internal/service"
@@ -20,96 +19,85 @@ func NewCategoryController(service service.ICategoryService) *CategoryController
 }
 
 func (cc *CategoryController) AddCategory(ctx *gin.Context) {
-	code := e.SUCCESS
 	var categoryDto request.CategoryDTO
 	err := ctx.Bind(&categoryDto)
 	if err != nil {
 		global.Log.Debug("param CategoryDTO json failed", err.Error())
+		retcode.Fatal(ctx, err, "")
 		return
 	}
 	if err = cc.service.AddCategory(ctx, categoryDto); err != nil {
-		code = e.ERROR
+		retcode.Fatal(ctx, err, "")
+		return
 	}
-	ctx.JSON(http.StatusOK, common.Result{
-		Code: code,
-	})
+	retcode.OK(ctx, "")
 }
 
 func (cc *CategoryController) PageQuery(ctx *gin.Context) {
-	code := e.SUCCESS
 	var categoryPageDTO request.CategoryPageQueryDTO
 	err := ctx.Bind(&categoryPageDTO)
 	if err != nil {
 		global.Log.Warn("Category invalid params failed ", err.Error())
-		e.Send(ctx, e.ERROR)
+		retcode.Fatal(ctx, err, "")
 		return
 	}
 	query, err := cc.service.PageQuery(ctx, categoryPageDTO)
 	if err != nil {
 		global.Log.Warn("Category PageQuery failed ", err.Error())
-		e.Send(ctx, e.ERROR)
+		retcode.Fatal(ctx, err, "")
 		return
 	}
-	ctx.JSON(http.StatusOK, common.Result{
-		Code: code,
-		Data: query,
-	})
+	retcode.OK(ctx, query)
 }
 
 func (cc *CategoryController) List(ctx *gin.Context) {
-	code := e.SUCCESS
 	cate, _ := strconv.Atoi(ctx.Query("type"))
 	list, err := cc.service.List(ctx, cate)
 	if err != nil {
-		code = e.ERROR
 		global.Log.Warn("Category List failed", err.Error())
+		retcode.Fatal(ctx, err, "")
+		return
 	}
-	ctx.JSON(http.StatusOK, common.Result{
-		Code: code,
-		Data: list,
-	})
+	retcode.OK(ctx, list)
 }
 
 func (cc *CategoryController) DeleteById(ctx *gin.Context) {
-	code := e.SUCCESS
-	id, _ := strconv.ParseUint(ctx.Query("id"), 10, 64)
+	id := cast.ToUint64(ctx.Query("id"))
 	err := cc.service.DeleteById(ctx, id)
 	if err != nil {
-		code = e.ERROR
 		global.Log.Warn("Category DeleteById failed", err.Error())
+		retcode.Fatal(ctx, err, "")
+		return
 	}
-	ctx.JSON(http.StatusOK, common.Result{
-		Code: code,
-	})
+	retcode.OK(ctx, "")
 }
 
 func (cc *CategoryController) EditCategory(ctx *gin.Context) {
-	code := e.SUCCESS
 	var categoryDTO request.CategoryDTO
 	err := ctx.Bind(&categoryDTO)
 	if err != nil {
-		code = e.ERROR
 		global.Log.Debug("param CategoryDTO failed", err.Error())
+		retcode.Fatal(ctx, err, "")
 		return
 	}
 	err = cc.service.Update(ctx, categoryDTO)
 	if err != nil {
-		code = e.ERROR
 		global.Log.Debug("Category Edit failed", err.Error())
+		retcode.Fatal(ctx, err, "")
+		return
 	}
-	ctx.JSON(http.StatusOK, common.Result{
-		Code: code,
-	})
+	retcode.OK(ctx, "")
+
 }
 
 func (cc *CategoryController) SetStatus(ctx *gin.Context) {
-	code := e.SUCCESS
 	id, _ := strconv.ParseUint(ctx.Query("id"), 10, 64)
 	status, _ := strconv.Atoi(ctx.Param("status"))
 	err := cc.service.SetStatus(ctx, id, status)
 	if err != nil {
-		code = e.ERROR
 		global.Log.Warn("Category SetStatus failed", err.Error())
+		retcode.Fatal(ctx, err, "")
+		return
 	}
-	ctx.JSON(http.StatusOK, common.Result{Code: code, Msg: e.GetMsg(code)})
+	retcode.OK(ctx, "")
 }

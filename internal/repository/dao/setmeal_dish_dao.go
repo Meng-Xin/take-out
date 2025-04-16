@@ -1,33 +1,38 @@
 package dao
 
 import (
-	"take-out/global/tx"
+	"context"
+	"gorm.io/gorm"
+	"take-out/common/e"
+	"take-out/common/retcode"
 	"take-out/internal/model"
-	"take-out/internal/repository"
 )
 
 type SetMealDishDao struct {
+	db *gorm.DB
 }
 
-func (s SetMealDishDao) GetBySetMealId(transactions tx.Transaction, SetMealId uint64) ([]model.SetMealDish, error) {
+func (d *SetMealDishDao) GetBySetMealId(ctx context.Context, SetMealId uint64) ([]model.SetMealDish, error) {
 	var dishList []model.SetMealDish
-	db, err := tx.GetGormDB(transactions)
+	err := d.db.WithContext(ctx).Where("setmeal_id = ?", SetMealId).Find(&dishList).Error
 	if err != nil {
-		return nil, err
+		return nil, retcode.NewError(e.MysqlERR, "delete dish failed")
 	}
-	err = db.Where("setmeal_id = ?", SetMealId).Find(&dishList).Error
-	return dishList, err
+	return dishList, nil
 }
 
-func (s SetMealDishDao) InsertBatch(transactions tx.Transaction, setmealDishs []model.SetMealDish) error {
-	db, err := tx.GetGormDB(transactions)
+func (d *SetMealDishDao) InsertBatch(ctx context.Context, setmealDishs []model.SetMealDish) error {
+	err := d.db.WithContext(ctx).Create(&setmealDishs).Error
 	if err != nil {
-		return err
+		return retcode.NewError(e.MysqlERR, "delete dish failed")
 	}
-	err = db.Create(&setmealDishs).Error
-	return err
+	return nil
 }
 
-func NewSetMealDishDao() repository.SetMealDishRepo {
+func NewSetMealDishDao() *SetMealDishDao {
 	return &SetMealDishDao{}
+}
+
+func (d *SetMealDishDao) WithTx(db *gorm.DB) *SetMealDishDao {
+	return &SetMealDishDao{db: db}
 }

@@ -1,37 +1,54 @@
 package dao
 
 import (
+	"context"
 	"gorm.io/gorm"
+	"take-out/common/e"
+	"take-out/common/retcode"
 	"take-out/internal/model"
-	"take-out/internal/repository"
 )
 
 type DishFlavorDao struct {
+	db *gorm.DB
 }
 
-func (d *DishFlavorDao) Update(db *gorm.DB, flavor model.DishFlavor) error {
-	err := db.Model(&model.DishFlavor{Id: flavor.Id}).Updates(flavor).Error
-	return err
+func (d *DishFlavorDao) Update(ctx context.Context, flavor model.DishFlavor) error {
+	err := d.db.Model(&model.DishFlavor{Id: flavor.Id}).Updates(flavor).Error
+	if err != nil {
+		return retcode.NewError(e.MysqlERR, "update dish flavor failed")
+	}
+	return nil
 }
 
-func (d *DishFlavorDao) InsertBatch(db *gorm.DB, flavor []model.DishFlavor) error {
+func (d *DishFlavorDao) InsertBatch(ctx context.Context, flavor []model.DishFlavor) error {
 	// 批量插入口味数据
-	err := db.Create(&flavor).Error
-	return err
+	err := d.db.Create(&flavor).Error
+	if err != nil {
+		return retcode.NewError(e.MysqlERR, "insert dish flavor failed")
+	}
+	return nil
 }
 
-func (d *DishFlavorDao) DeleteByDishId(db *gorm.DB, dishId uint64) error {
+func (d *DishFlavorDao) DeleteByDishId(ctx context.Context, dishId uint64) error {
 	// 根据dishId删除对应的口味数据
-	err := db.Where("dish_id = ?", dishId).Delete(&model.DishFlavor{}).Error
-	return err
+	err := d.db.Where("dish_id = ?", dishId).Delete(&model.DishFlavor{}).Error
+	if err != nil {
+		return retcode.NewError(e.MysqlERR, "delete dish flavor failed")
+	}
+	return nil
 }
 
-func (d *DishFlavorDao) GetByDishId(db *gorm.DB, dishId uint64) ([]model.DishFlavor, error) {
+func (d *DishFlavorDao) GetByDishId(ctx context.Context, dishId uint64) ([]model.DishFlavor, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-// NewDishFlavorDao db 是上个事务创建出来的
-func NewDishFlavorDao() repository.DishFlavorRepo {
-	return &DishFlavorDao{}
+// NewDishFlavorDao 创建dao实例
+func NewDishFlavorDao(db *gorm.DB) *DishFlavorDao {
+	return &DishFlavorDao{db: db}
+}
+
+// WithTx 使用事务
+func (d *DishFlavorDao) WithTx(tx *gorm.DB) *DishFlavorDao {
+	return &DishFlavorDao{db: tx}
 }

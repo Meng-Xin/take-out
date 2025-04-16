@@ -2,13 +2,15 @@ package service
 
 import (
 	"context"
+	"gorm.io/gorm"
 	"strconv"
 	"take-out/common"
 	"take-out/common/enum"
+	"take-out/global"
 	"take-out/internal/api/request"
 	"take-out/internal/api/response"
 	"take-out/internal/model"
-	"take-out/internal/repository"
+	"take-out/internal/repository/dao"
 )
 
 type ISetMealService interface {
@@ -19,50 +21,40 @@ type ISetMealService interface {
 }
 
 type SetMealServiceImpl struct {
-	repo            repository.SetMealRepo
-	setMealDishRepo repository.SetMealDishRepo
+	repo            *dao.SetMealDao
+	setMealDishRepo *dao.SetMealDishDao
 }
 
 func (s *SetMealServiceImpl) GetByIdWithDish(ctx context.Context, setMealId uint64) (response.SetMealWithDishByIdVo, error) {
+	var setMealVo response.SetMealWithDishByIdVo
 	// 获取事务
-	transaction := s.repo.Transaction(ctx)
-	// 开始事务
-	if err := transaction.Begin(); err != nil {
-		return response.SetMealWithDishByIdVo{}, err
-	}
-	defer func() {
-		if err := recover(); err != nil {
-			transaction.Rollback()
+	err := global.DB.Transaction(func(tx *gorm.DB) error {
+		// 单独查询套餐
+		setMeal, err := s.repo.WithTx(tx).GetByIdWithDish(ctx, setMealId)
+		if err != nil {
+			return err
 		}
-	}()
-	// 单独查询套餐
-	setMeal, err := s.repo.GetByIdWithDish(transaction, setMealId)
-	if err != nil {
-		return response.SetMealWithDishByIdVo{}, err
-	}
-	// 查询中间表记录的套餐菜品信息
-	dishList, err := s.setMealDishRepo.GetBySetMealId(transaction, setMealId)
-	if err != nil {
-		return response.SetMealWithDishByIdVo{}, err
-	}
-	// 事务提交
-	if err = transaction.Commit(); err != nil {
-		return response.SetMealWithDishByIdVo{}, err
-	}
-	// 数据组装
-	setMealVo := response.SetMealWithDishByIdVo{
-		Id:            setMeal.Id,
-		CategoryId:    setMeal.CategoryId,
-		CategoryName:  setMeal.Name,
-		Description:   setMeal.Description,
-		Image:         setMeal.Image,
-		Name:          setMeal.Name,
-		Price:         setMeal.Price,
-		Status:        setMeal.Status,
-		SetmealDishes: dishList,
-		UpdateTime:    setMeal.UpdateTime,
-	}
-	return setMealVo, nil
+		// 查询中间表记录的套餐菜品信息
+		dishList, err := s.setMealDishRepo.WithTx(tx).GetBySetMealId(ctx, setMealId)
+		if err != nil {
+			return err
+		}
+		// 数据组装
+		setMealVo = response.SetMealWithDishByIdVo{
+			Id:            setMeal.Id,
+			CategoryId:    setMeal.CategoryId,
+			CategoryName:  setMeal.Name,
+			Description:   setMeal.Description,
+			Image:         setMeal.Image,
+			Name:          setMeal.Name,
+			Price:         setMeal.Price,
+			Status:        setMeal.Status,
+			SetmealDishes: dishList,
+			UpdateTime:    setMeal.UpdateTime,
+		}
+		return nil
+	})
+	return setMealVo, err
 }
 
 func (s *SetMealServiceImpl) OnOrClose(ctx context.Context, id uint64, status int) error {
@@ -92,33 +84,26 @@ func (s *SetMealServiceImpl) SaveWithDish(ctx context.Context, dto request.SetMe
 		Image:       dto.Image,
 	}
 	// 开启事务进行存储
-	transaction := s.repo.Transaction(ctx)
-	// 开始事务
-	if err := transaction.Begin(); err != nil {
-		return err
-	}
-	defer func() {
-		if err := recover(); err != nil {
-			transaction.Rollback()
+	err := global.DB.Transaction(func(tx *gorm.DB) error {
+		// 先插入套餐数据信息，并得到返回的主键id值
+		err := s.repo.WithTx(tx).Insert(ctx, &setmeal)
+		if err != nil {
+			return err
 		}
-	}()
-	// 先插入套餐数据信息，并得到返回的主键id值
-	err := s.repo.Insert(transaction, &setmeal)
-	if err != nil {
-		return err
-	}
-	// 再对中间表中套餐内的菜品信息附加主键id
-	for _, setmealDish := range dto.SetMealDishs {
-		setmealDish.SetmealId = setmeal.Id
-	}
-	// 向中间表插入数据
-	err = s.setMealDishRepo.InsertBatch(transaction, dto.SetMealDishs)
-	if err != nil {
-		return err
-	}
-	return transaction.Commit()
+		// 再对中间表中套餐内的菜品信息附加主键id
+		for _, setmealDish := range dto.SetMealDishs {
+			setmealDish.SetmealId = setmeal.Id
+		}
+		// 向中间表插入数据
+		err = s.setMealDishRepo.WithTx(tx).InsertBatch(ctx, dto.SetMealDishs)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	return err
 }
 
-func NewSetMealService(repo repository.SetMealRepo, setMealDishRepo repository.SetMealDishRepo) ISetMealService {
+func NewSetMealService(repo *dao.SetMealDao, setMealDishRepo *dao.SetMealDishDao) ISetMealService {
 	return &SetMealServiceImpl{repo: repo, setMealDishRepo: setMealDishRepo}
 }

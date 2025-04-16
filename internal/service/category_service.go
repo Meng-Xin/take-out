@@ -7,7 +7,7 @@ import (
 	"take-out/common/enum"
 	"take-out/internal/api/request"
 	"take-out/internal/model"
-	"take-out/internal/repository"
+	"take-out/internal/repository/dao"
 )
 
 type ICategoryService interface {
@@ -20,7 +20,7 @@ type ICategoryService interface {
 }
 
 type CategoryImpl struct {
-	repo repository.CategoryRepo
+	repo *dao.CategoryDao
 }
 
 func (c *CategoryImpl) SetStatus(ctx context.Context, id uint64, status int) error {
@@ -72,6 +72,6 @@ func (c *CategoryImpl) AddCategory(ctx context.Context, dto request.CategoryDTO)
 	return err
 }
 
-func NewCategoryService(repo repository.CategoryRepo) ICategoryService {
+func NewCategoryService(repo *dao.CategoryDao) ICategoryService {
 	return &CategoryImpl{repo: repo}
 }
