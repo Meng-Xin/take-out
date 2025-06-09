@@ -2,8 +2,10 @@ package service
 
 import (
 	"context"
+	"github.com/spf13/cast"
 	"gorm.io/gorm"
 	"strconv"
+	"strings"
 	"take-out/common"
 	"take-out/common/enum"
 	"take-out/global"
@@ -18,11 +20,40 @@ type ISetMealService interface {
 	PageQuery(ctx context.Context, dto request.SetMealPageQueryDTO) (*common.PageResult, error)
 	OnOrClose(ctx context.Context, id uint64, status int) error
 	GetByIdWithDish(ctx context.Context, dishId uint64) (response.SetMealWithDishByIdVo, error)
+	Delete(ctx context.Context, ids string) error
 }
 
 type SetMealServiceImpl struct {
 	repo            *dao.SetMealDao
 	setMealDishRepo *dao.SetMealDishDao
+}
+
+func (s *SetMealServiceImpl) Delete(ctx context.Context, ids string) error {
+	idStrList := strings.Split(ids, ",")
+	setMealIdList := make([]uint64, 0)
+	for i, id := range idStrList {
+		setMealIdList[i] = cast.ToUint64(id)
+	}
+	err := global.DB.Transaction(func(tx *gorm.DB) error {
+		//1.删除套餐和菜品中间表数据
+		err := s.setMealDishRepo.DeleteBySetMealIds(ctx, setMealIdList...)
+		if err != nil {
+			global.Log.Error("s.setMealDishRepo.DeleteBySetMealIds failed err=%v", err)
+			return err
+		}
+		//2.删除对应套餐
+		err = s.repo.DeleteByIds(ctx, setMealIdList...)
+		if err != nil {
+			global.Log.Error("s.repo.DeleteByIds failed err=%v", err)
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		global.Log.Error("SetMealServiceImpl Transaction failed err=%s", err)
+		return err
+	}
+	return nil
 }
 
 func (s *SetMealServiceImpl) GetByIdWithDish(ctx context.Context, setMealId uint64) (response.SetMealWithDishByIdVo, error) {

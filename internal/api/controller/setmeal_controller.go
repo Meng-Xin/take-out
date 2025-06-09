@@ -17,6 +17,16 @@ func NewSetMealController(service service.ISetMealService) *SetMealController {
 	return &SetMealController{service: service}
 }
 
+func (sc *SetMealController) Delete(ctx *gin.Context) {
+	ids := ctx.Query("ids")
+	err := sc.service.Delete(ctx, ids)
+	if err != nil {
+		global.Log.Error("Delete 删除套餐失败！", "err", err)
+		retcode.Fatal(ctx, err, "")
+	}
+	retcode.OK(ctx, "")
+}
+
 // SaveWithDish 保存套餐和菜品信息
 func (sc *SetMealController) SaveWithDish(ctx *gin.Context) {
 	var setmealDTO request.SetMealDTO

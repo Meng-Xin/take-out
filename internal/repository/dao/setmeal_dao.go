@@ -6,6 +6,7 @@ import (
 	"take-out/common"
 	"take-out/common/e"
 	"take-out/common/retcode"
+	"take-out/global"
 	"take-out/internal/api/request"
 	"take-out/internal/api/response"
 	"take-out/internal/model"
@@ -13,6 +14,15 @@ import (
 
 type SetMealDao struct {
 	db *gorm.DB
+}
+
+func (s *SetMealDao) DeleteByIds(ctx context.Context, ids ...uint64) error {
+	err := s.db.WithContext(ctx).Model(&model.SetMeal{}).Where("id IN ? ", ids).Error
+	if err != nil {
+		global.Log.Error("DeleteByIds failed, err: %v", err)
+		return retcode.NewError(e.MysqlERR, "delete setMeal failed")
+	}
+	return nil
 }
 
 func (s *SetMealDao) GetByIdWithDish(ctx context.Context, id uint64) (*model.SetMeal, error) {
