@@ -16,7 +16,7 @@ type SetMealDishDao struct {
 func (d *SetMealDishDao) DeleteBySetMealIds(ctx context.Context, ids ...uint64) error {
 	err := d.db.WithContext(ctx).Model(&model.SetMealDish{}).Where("setmeal_id IN ? ", ids).Error
 	if err != nil {
-		global.Log.Error("DeleteBySetMealIds failed, err: %v", err)
+		global.Log.ErrContext(ctx, "DeleteBySetMealIds failed, err: %v", err)
 		return retcode.NewError(e.MysqlERR, "delete set meal dish failed")
 	}
 	return nil

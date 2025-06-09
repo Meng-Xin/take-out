@@ -38,19 +38,19 @@ func (s *SetMealServiceImpl) Delete(ctx context.Context, ids string) error {
 		//1.删除套餐和菜品中间表数据
 		err := s.setMealDishRepo.DeleteBySetMealIds(ctx, setMealIdList...)
 		if err != nil {
-			global.Log.Error("s.setMealDishRepo.DeleteBySetMealIds failed err=%v", err)
+			global.Log.ErrContext(ctx, "s.setMealDishRepo.DeleteBySetMealIds failed err=%s", err.Error())
 			return err
 		}
 		//2.删除对应套餐
 		err = s.repo.DeleteByIds(ctx, setMealIdList...)
 		if err != nil {
-			global.Log.Error("s.repo.DeleteByIds failed err=%v", err)
+			global.Log.ErrContext(ctx, "s.repo.DeleteByIds failed err=%s", err.Error())
 			return err
 		}
 		return nil
 	})
 	if err != nil {
-		global.Log.Error("SetMealServiceImpl Transaction failed err=%s", err)
+		global.Log.ErrContext(ctx, "SetMealServiceImpl Transaction failed err=%s", err.Error())
 		return err
 	}
 	return nil

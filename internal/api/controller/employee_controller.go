@@ -23,13 +23,13 @@ func (ec *EmployeeController) Login(ctx *gin.Context) {
 	employeeLogin := request.EmployeeLogin{}
 	err := ctx.Bind(&employeeLogin)
 	if err != nil {
-		global.Log.Debug("EmployeeController login 解析失败")
+		global.Log.ErrContext(ctx, "EmployeeController login 解析失败")
 		retcode.Fatal(ctx, err, "")
 		return
 	}
 	resp, err := ec.service.Login(ctx, employeeLogin)
 	if err != nil {
-		global.Log.Warn("EmployeeController login Error:", err.Error())
+		global.Log.ErrContext(ctx, "EmployeeController login Error: err=%s", err.Error())
 		retcode.Fatal(ctx, err, "")
 		return
 	}
@@ -41,7 +41,7 @@ func (ec *EmployeeController) Logout(ctx *gin.Context) {
 	var err error
 	err = ec.service.Logout(ctx)
 	if err != nil {
-		global.Log.Warn("EmployeeController login Error:", err.Error())
+		global.Log.ErrContext(ctx, "EmployeeController login Error: err=%s", err.Error())
 		retcode.Fatal(ctx, err, "")
 		return
 	}
@@ -54,7 +54,7 @@ func (ec *EmployeeController) EditPassword(ctx *gin.Context) {
 	var err error
 	err = ctx.Bind(&reqs)
 	if err != nil {
-		global.Log.Debug("EditPassword Error:", err.Error())
+		global.Log.ErrContext(ctx, "EditPassword Error: err=%s", err.Error())
 		retcode.Fatal(ctx, err, "")
 		return
 	}
@@ -64,7 +64,7 @@ func (ec *EmployeeController) EditPassword(ctx *gin.Context) {
 	}
 	err = ec.service.EditPassword(ctx, reqs)
 	if err != nil {
-		global.Log.Warn("EditPassword  Error:", err.Error())
+		global.Log.ErrContext(ctx, "EditPassword  Error: err=%s", err.Error())
 		retcode.Fatal(ctx, err, "")
 	}
 	retcode.OK(ctx, "")
@@ -76,13 +76,13 @@ func (ec *EmployeeController) AddEmployee(ctx *gin.Context) {
 	var err error
 	err = ctx.Bind(&request)
 	if err != nil {
-		global.Log.Debug("AddEmployee Error:", err.Error())
+		global.Log.ErrContext(ctx, "AddEmployee Error: err=%s", err.Error())
 		retcode.Fatal(ctx, err, "")
 		return
 	}
 	err = ec.service.CreateEmployee(ctx, request)
 	if err != nil {
-		global.Log.Warn("AddEmployee  Error:", err.Error())
+		global.Log.ErrContext(ctx, "AddEmployee  Error: err=%s", err.Error())
 		retcode.Fatal(ctx, err, "")
 		return
 	}
@@ -95,14 +95,14 @@ func (ec *EmployeeController) PageQuery(ctx *gin.Context) {
 	var employeePageQueryDTO request.EmployeePageQueryDTO
 	err := ctx.Bind(&employeePageQueryDTO)
 	if err != nil {
-		global.Log.Error("AddEmployee  invalid params err:", err.Error())
+		global.Log.ErrContext(ctx, "AddEmployee  invalid params err=%s", err.Error())
 		retcode.Fatal(ctx, err, "")
 		return
 	}
 	// 进行分页查询
 	pageResult, err := ec.service.PageQuery(ctx, employeePageQueryDTO)
 	if err != nil {
-		global.Log.Warn("AddEmployee  Error:", err.Error())
+		global.Log.ErrContext(ctx, "AddEmployee  Error: err=%s", err.Error())
 		retcode.Fatal(ctx, err, "")
 		return
 	}
@@ -116,7 +116,7 @@ func (ec *EmployeeController) OnOrOff(ctx *gin.Context) {
 	var err error
 	err = ec.service.SetStatus(ctx, id, status)
 	if err != nil {
-		global.Log.Warn("OnOrOff Status  Error:", err.Error())
+		global.Log.ErrContext(ctx, "OnOrOff Status  Error: err=%s", err.Error())
 		retcode.Fatal(ctx, err, "")
 		return
 	}
@@ -130,14 +130,14 @@ func (ec *EmployeeController) UpdateEmployee(ctx *gin.Context) {
 	var employeeDTO request.EmployeeDTO
 	err := ctx.Bind(&employeeDTO)
 	if err != nil {
-		global.Log.Debug("UpdateEmployee Error:", err.Error())
+		global.Log.ErrContext(ctx, "UpdateEmployee Error: err=%s", err.Error())
 		retcode.Fatal(ctx, err, "")
 		return
 	}
 	// 修改员工信息
 	err = ec.service.UpdateEmployee(ctx.Request.Context(), employeeDTO)
 	if err != nil {
-		global.Log.Warn("UpdateEmployee Error:", err.Error())
+		global.Log.ErrContext(ctx, "UpdateEmployee Error: err=%s", err.Error())
 		retcode.Fatal(ctx, err, "")
 		return
 	}
@@ -149,7 +149,7 @@ func (ec *EmployeeController) GetById(ctx *gin.Context) {
 	id, _ := strconv.ParseUint(ctx.Param("id"), 10, 64)
 	employee, err := ec.service.GetById(ctx.Request.Context(), id)
 	if err != nil {
-		global.Log.Warn("EmployeeCtrl GetById Error", err.Error())
+		global.Log.ErrContext(ctx, "EmployeeCtrl GetById Error err=%s", err.Error())
 		retcode.Fatal(ctx, err, "")
 		return
 	}

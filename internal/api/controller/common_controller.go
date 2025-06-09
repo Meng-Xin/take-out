@@ -22,7 +22,7 @@ func (cc *CommonController) Upload(ctx *gin.Context) {
 	imageName := uuid.String() + file.Filename
 	imagePath, err := utils.AliyunOss(imageName, file)
 	if err != nil {
-		global.Log.Warn("AliyunOss upload failed", "err", err.Error())
+		global.Log.ErrContext(ctx, "AliyunOss upload failed err=%s", err.Error())
 		retcode.Fatal(ctx, err, "")
 		return
 	}

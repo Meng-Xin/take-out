@@ -21,7 +21,7 @@ func (sc *SetMealController) Delete(ctx *gin.Context) {
 	ids := ctx.Query("ids")
 	err := sc.service.Delete(ctx, ids)
 	if err != nil {
-		global.Log.Error("Delete 删除套餐失败！", "err", err)
+		global.Log.ErrContext(ctx, "Delete 删除套餐失败！ err=%s", err)
 		retcode.Fatal(ctx, err, "")
 	}
 	retcode.OK(ctx, "")
@@ -32,13 +32,13 @@ func (sc *SetMealController) SaveWithDish(ctx *gin.Context) {
 	var setmealDTO request.SetMealDTO
 	err := ctx.Bind(&setmealDTO)
 	if err != nil {
-		global.Log.Debug("SaveWithDish保存套餐和菜品信息 结构体解析失败！", "Err:", err.Error())
+		global.Log.ErrContext(ctx, "SaveWithDish保存套餐和菜品信息 结构体解析失败！err=%s", err.Error())
 		retcode.Fatal(ctx, err, "")
 		return
 	}
 	err = sc.service.SaveWithDish(ctx, setmealDTO)
 	if err != nil {
-		global.Log.Warn("SaveWithDish保存套餐和菜品信息！", "Err:", err.Error())
+		global.Log.ErrContext(ctx, "SaveWithDish保存套餐和菜品信息！err=%s", err.Error())
 		retcode.Fatal(ctx, err, "")
 		return
 	}
@@ -51,14 +51,14 @@ func (sc *SetMealController) PageQuery(ctx *gin.Context) {
 	var pageQueryDTO request.SetMealPageQueryDTO
 	err := ctx.Bind(&pageQueryDTO)
 	if err != nil {
-		global.Log.Error("PageQuery invalid params err:", err.Error())
+		global.Log.ErrContext(ctx, "PageQuery invalid params! err=%s", err.Error())
 		retcode.Fatal(ctx, err, "")
 		return
 	}
 	// 分页查询
 	result, err := sc.service.PageQuery(ctx, pageQueryDTO)
 	if err != nil {
-		global.Log.Warn("PageQuery 套餐分页查询失败！", "Err:", err.Error())
+		global.Log.ErrContext(ctx, "PageQuery 套餐分页查询失败！err=%s", err.Error())
 		retcode.Fatal(ctx, err, "")
 		return
 	}
@@ -72,7 +72,7 @@ func (sc *SetMealController) OnOrClose(ctx *gin.Context) {
 	// 设置套餐状态
 	err := sc.service.OnOrClose(ctx, id, status)
 	if err != nil {
-		global.Log.Warn("OnOrClose 套餐启用禁用失败！", "Err:", err.Error())
+		global.Log.ErrContext(ctx, "OnOrClose 套餐启用禁用失败！err=%s", err.Error())
 		retcode.Fatal(ctx, err, "")
 		return
 	}
@@ -85,7 +85,7 @@ func (sc *SetMealController) GetByIdWithDish(ctx *gin.Context) {
 	// 获取套餐详情
 	resp, err := sc.service.GetByIdWithDish(ctx, setMealId)
 	if err != nil {
-		global.Log.Warn("GetByIdWithDish 根据套餐id获取套餐和关联菜品信息", "Err:", err.Error())
+		global.Log.ErrContext(ctx, "GetByIdWithDish 根据套餐id获取套餐和关联菜品信息 err=%s", err.Error())
 		retcode.Fatal(ctx, err, "")
 		return
 	}

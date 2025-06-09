@@ -1,10 +1,10 @@
 package global
 
 import (
+	logger "github.com/Meng-Xin/logger"
 	"github.com/go-redis/redis"
 	"gorm.io/gorm"
 	"take-out/config"
-	"take-out/logger"
 )
 
 var (
