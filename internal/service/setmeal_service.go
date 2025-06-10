@@ -36,13 +36,13 @@ func (s *SetMealServiceImpl) Delete(ctx context.Context, ids string) error {
 	}
 	err := global.DB.Transaction(func(tx *gorm.DB) error {
 		//1.删除套餐和菜品中间表数据
-		err := s.setMealDishRepo.DeleteBySetMealIds(ctx, setMealIdList...)
+		err := s.setMealDishRepo.WithTx(tx).DeleteBySetMealIds(ctx, setMealIdList...)
 		if err != nil {
 			global.Log.ErrContext(ctx, "s.setMealDishRepo.DeleteBySetMealIds failed err=%s", err.Error())
 			return err
 		}
 		//2.删除对应套餐
-		err = s.repo.DeleteByIds(ctx, setMealIdList...)
+		err = s.repo.WithTx(tx).DeleteByIds(ctx, setMealIdList...)
 		if err != nil {
 			global.Log.ErrContext(ctx, "s.repo.DeleteByIds failed err=%s", err.Error())
 			return err
