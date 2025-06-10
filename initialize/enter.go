@@ -15,10 +15,10 @@ func GlobalInit() *gin.Engine {
 		logger.WithServiceName("takeout"),
 	))
 	// Gorm初始化
-	//global.DB = InitDatabase(global.Config.DataSource.Dsn())
-	//// Redis初始化
-	//global.Redis = initRedis()
-	// Router初始化
+	global.DB = InitDatabase(global.Config.DataSource.Dsn())
+	// Redis初始化
+	global.Redis = initRedis()
+	//Router初始化
 	router := routerInit()
 	return router
 }
