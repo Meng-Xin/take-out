@@ -20,7 +20,7 @@ func (cc *CommonController) Upload(ctx *gin.Context) {
 	// 拼接uuid的图片名称
 	uuid := uuid.New()
 	imageName := uuid.String() + file.Filename
-	imagePath, err := utils.AliyunOss(imageName, file)
+	imagePath, err := utils.AliyunOss(ctx, imageName, file)
 	if err != nil {
 		global.Log.ErrContext(ctx, "AliyunOss upload failed err=%s", err.Error())
 		retcode.Fatal(ctx, err, "")

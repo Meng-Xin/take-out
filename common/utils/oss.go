@@ -1,13 +1,13 @@
 package utils
 
 import (
-	"fmt"
+	"context"
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 	"mime/multipart"
 	"take-out/global"
 )
 
-func AliyunOss(fileName string, file *multipart.FileHeader) (string, error) {
+func AliyunOss(ctx context.Context, fileName string, file *multipart.FileHeader) (string, error) {
 	config := global.Config.AliOss
 	client, err := oss.New(config.EndPoint, config.AccessKeyId, config.AccessKeySecret)
 	if err != nil {
@@ -26,6 +26,6 @@ func AliyunOss(fileName string, file *multipart.FileHeader) (string, error) {
 		return "", err
 	}
 	imagePath := "https://" + config.BucketName + "." + config.EndPoint + "/" + fileName
-	fmt.Println("文件上传到：", imagePath)
+	global.Log.InfoContext(ctx, "文件上传到：", imagePath)
 	return imagePath, nil
 }
