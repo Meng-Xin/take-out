@@ -16,7 +16,7 @@ type SetMealDishDao struct {
 func (d *SetMealDishDao) DeleteBySetMealIds(ctx context.Context, ids ...uint64) error {
 	err := d.db.WithContext(ctx).Model(&model.SetMealDish{}).Where("setmeal_id IN ? ", ids).Error
 	if err != nil {
-		global.Log.ErrContext(ctx, "DeleteBySetMealIds failed, err: %v", err)
+		global.Log.ErrContext(ctx, "SetMealDishDao.DeleteBySetMealIds failed, err: %v", err)
 		return retcode.NewError(e.MysqlERR, "delete set meal dish failed")
 	}
 	return nil
@@ -26,6 +26,7 @@ func (d *SetMealDishDao) GetBySetMealId(ctx context.Context, SetMealId uint64) (
 	var dishList []model.SetMealDish
 	err := d.db.WithContext(ctx).Where("setmeal_id = ?", SetMealId).Find(&dishList).Error
 	if err != nil {
+		global.Log.ErrContext(ctx, "SetMealDishDao.GetBySetMealId failed, err: %v", err)
 		return nil, retcode.NewError(e.MysqlERR, "delete dish failed")
 	}
 	return dishList, nil
@@ -34,6 +35,7 @@ func (d *SetMealDishDao) GetBySetMealId(ctx context.Context, SetMealId uint64) (
 func (d *SetMealDishDao) InsertBatch(ctx context.Context, setmealDishs []model.SetMealDish) error {
 	err := d.db.WithContext(ctx).Create(&setmealDishs).Error
 	if err != nil {
+		global.Log.ErrContext(ctx, "SetMealDishDao.InsertBatch failed, err: %v", err)
 		return retcode.NewError(e.MysqlERR, "delete dish failed")
 	}
 	return nil

@@ -7,7 +7,9 @@ import (
 	"strconv"
 	"strings"
 	"take-out/common"
+	"take-out/common/e"
 	"take-out/common/enum"
+	"take-out/common/retcode"
 	"take-out/global"
 	"take-out/internal/api/request"
 	"take-out/internal/api/response"
@@ -38,16 +40,19 @@ func (d *DishServiceImpl) Delete(ctx context.Context, ids string) error {
 			dishId := cast.ToUint64(idStr)
 			err := d.dishFlavorRepo.WithTx(tx).DeleteByDishId(ctx, dishId)
 			if err != nil {
+				global.Log.ErrContext(ctx, "DishServiceImpl.Delete failed, err: %v", err)
 				return err
 			}
 			err = d.repo.WithTx(tx).Delete(ctx, dishId)
 			if err != nil {
+				global.Log.ErrContext(ctx, "DishServiceImpl.Delete failed, err: %v", err)
 				return err
 			}
 			return nil
 		})
 		if err != nil {
-			return err
+			global.Log.ErrContext(ctx, "DishServiceImpl.Delete transaction failed, err: %v", err)
+			return retcode.NewError(e.MysqlTransActionERR, e.GetMsg(e.MysqlTransActionERR))
 		}
 	}
 	return nil
@@ -70,34 +75,45 @@ func (d *DishServiceImpl) Update(ctx context.Context, dto request.DishUpdateDTO)
 		// 更新菜品信息
 		err := d.repo.WithTx(tx).Update(ctx, dish)
 		if err != nil {
+			global.Log.ErrContext(ctx, "DishServiceImpl.Update failed, err: %v", err)
 			return err
 		}
 		// 更新菜品的口味分两步： 1.先删除原有的所有关联数据，2.再插入新的口味数据
 		err = d.dishFlavorRepo.WithTx(tx).DeleteByDishId(ctx, dish.Id)
 		if err != nil {
+			global.Log.ErrContext(ctx, "DishServiceImpl.Update failed, err: %v", err)
 			return err
 		}
 		if len(dish.Flavors) != 0 {
 			err = d.dishFlavorRepo.WithTx(tx).InsertBatch(ctx, dish.Flavors)
 			if err != nil {
+				global.Log.ErrContext(ctx, "DishServiceImpl.Update failed, err: %v", err)
 				return err
 			}
 		}
 		return nil
 	})
-
+	if err != nil {
+		global.Log.ErrContext(ctx, "DishServiceImpl.Update transaction failed, err: %v", err)
+		return retcode.NewError(e.MysqlTransActionERR, e.GetMsg(e.MysqlTransActionERR))
+	}
 	return err
 }
 
 func (d *DishServiceImpl) OnOrClose(ctx context.Context, id uint64, status int) error {
 	err := d.repo.OnOrClose(ctx, id, status)
-	return err
+	if err != nil {
+		global.Log.ErrContext(ctx, "DishServiceImpl.OnOrClose failed, err: %v", err)
+		return err
+	}
+	return nil
 }
 
 func (d *DishServiceImpl) List(ctx context.Context, categoryId uint64) ([]response.DishListVo, error) {
 	var dishListVo []response.DishListVo
 	dishList, err := d.repo.List(ctx, categoryId)
 	if err != nil {
+		global.Log.ErrContext(ctx, "DishServiceImpl.List failed, err: %v", err)
 		return nil, err
 	}
 	// 这里这样的写法是 规范化Vo传输对象。
@@ -120,8 +136,11 @@ func (d *DishServiceImpl) List(ctx context.Context, categoryId uint64) ([]respon
 }
 
 func (d *DishServiceImpl) GetByIdWithFlavors(ctx context.Context, id uint64) (response.DishVo, error) {
-
 	dish, err := d.repo.GetById(ctx, id)
+	if err != nil {
+		global.Log.ErrContext(ctx, "DishServiceImpl.GetByIdWithFlavors failed, err: %v", err)
+		return response.DishVo{}, err
+	}
 	dishVo := response.DishVo{
 		Id:          dish.Id,
 		Name:        dish.Name,
@@ -139,6 +158,7 @@ func (d *DishServiceImpl) GetByIdWithFlavors(ctx context.Context, id uint64) (re
 func (d *DishServiceImpl) PageQuery(ctx context.Context, dto *request.DishPageQueryDTO) (*common.PageResult, error) {
 	pageResult, err := d.repo.PageQuery(ctx, dto)
 	if err != nil {
+		global.Log.ErrContext(ctx, "DishServiceImpl.PageQuery failed, err: %v", err)
 		return nil, err
 	}
 	return pageResult, err
@@ -161,6 +181,7 @@ func (d *DishServiceImpl) AddDishWithFlavors(ctx context.Context, dto request.Di
 		// 2.先新增菜品数据，再新增口味数据
 		err := d.repo.WithTx(tx).Insert(ctx, &dish)
 		if err != nil {
+			global.Log.ErrContext(ctx, "DishServiceImpl.AddDishWithFlavors failed, err: %v", err)
 			return err
 		}
 		// 为口味数据附加菜品id
@@ -169,10 +190,15 @@ func (d *DishServiceImpl) AddDishWithFlavors(ctx context.Context, dto request.Di
 		}
 		err = d.dishFlavorRepo.WithTx(tx).InsertBatch(ctx, dto.Flavors)
 		if err != nil {
+			global.Log.ErrContext(ctx, "DishServiceImpl.AddDishWithFlavors failed, err: %v", err)
 			return err
 		}
 		return nil
 	})
+	if err != nil {
+		global.Log.ErrContext(ctx, "DishServiceImpl.AddDishWithFlavors transaction failed, err: %v", err)
+		return retcode.NewError(e.MysqlTransActionERR, e.GetMsg(e.MysqlTransActionERR))
+	}
 	return err
 }
 

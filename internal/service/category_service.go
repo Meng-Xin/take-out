@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"take-out/common"
 	"take-out/common/enum"
+	"take-out/global"
 	"take-out/internal/api/request"
 	"take-out/internal/model"
 	"take-out/internal/repository/dao"
@@ -28,7 +29,11 @@ func (c *CategoryImpl) SetStatus(ctx context.Context, id uint64, status int) err
 		Id:     id,
 		Status: status,
 	})
-	return err
+	if err != nil {
+		global.Log.ErrContext(ctx, "CategoryImpl.SetStatus error", err)
+		return err
+	}
+	return nil
 }
 
 func (c *CategoryImpl) Update(ctx context.Context, dto request.CategoryDTO) error {
@@ -40,22 +45,36 @@ func (c *CategoryImpl) Update(ctx context.Context, dto request.CategoryDTO) erro
 		Name: dto.Name,
 		Sort: sort,
 	})
+	if err != nil {
+		global.Log.ErrContext(ctx, "CategoryImpl.Update error", err)
+	}
 	return err
 }
 
 func (c *CategoryImpl) DeleteById(ctx context.Context, id uint64) error {
 	err := c.repo.DeleteById(ctx, id)
-	return err
+	if err != nil {
+		global.Log.ErrContext(ctx, "CategoryImpl.DeleteById error", err)
+		return err
+	}
+	return nil
 }
 
 func (c *CategoryImpl) List(ctx context.Context, cate int) ([]model.Category, error) {
 	list, err := c.repo.List(ctx, cate)
-	return list, err
+	if err != nil {
+		global.Log.ErrContext(ctx, "CategoryImpl.List error", err)
+	}
+	return list, nil
 }
 
 func (c *CategoryImpl) PageQuery(ctx context.Context, dto request.CategoryPageQueryDTO) (*common.PageResult, error) {
 	query, err := c.repo.PageQuery(ctx, dto)
-	return query, err
+	if err != nil {
+		global.Log.ErrContext(ctx, "CategoryImpl.PageQuery error", err)
+		return nil, err
+	}
+	return query, nil
 }
 
 func (c *CategoryImpl) AddCategory(ctx context.Context, dto request.CategoryDTO) error {
@@ -69,7 +88,11 @@ func (c *CategoryImpl) AddCategory(ctx context.Context, dto request.CategoryDTO)
 		Sort:   sort,
 		Status: enum.ENABLE,
 	})
-	return err
+	if err != nil {
+		global.Log.ErrContext(ctx, "CategoryImpl.AddCategory error", err)
+		return err
+	}
+	return nil
 }
 
 func NewCategoryService(repo *dao.CategoryDao) ICategoryService {

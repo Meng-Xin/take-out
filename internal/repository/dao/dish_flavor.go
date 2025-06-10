@@ -5,6 +5,7 @@ import (
 	"gorm.io/gorm"
 	"take-out/common/e"
 	"take-out/common/retcode"
+	"take-out/global"
 	"take-out/internal/model"
 )
 
@@ -13,8 +14,9 @@ type DishFlavorDao struct {
 }
 
 func (d *DishFlavorDao) Update(ctx context.Context, flavor model.DishFlavor) error {
-	err := d.db.Model(&model.DishFlavor{Id: flavor.Id}).Updates(flavor).Error
+	err := d.db.WithContext(ctx).Model(&model.DishFlavor{Id: flavor.Id}).Updates(flavor).Error
 	if err != nil {
+		global.Log.ErrContext(ctx, "Update dish flavor failed, err: %v", err)
 		return retcode.NewError(e.MysqlERR, "update dish flavor failed")
 	}
 	return nil
@@ -22,8 +24,9 @@ func (d *DishFlavorDao) Update(ctx context.Context, flavor model.DishFlavor) err
 
 func (d *DishFlavorDao) InsertBatch(ctx context.Context, flavor []model.DishFlavor) error {
 	// 批量插入口味数据
-	err := d.db.Create(&flavor).Error
+	err := d.db.WithContext(ctx).Create(&flavor).Error
 	if err != nil {
+		global.Log.ErrContext(ctx, "DishFlavorDao.InsertBatch dish flavor failed, err: %v", err)
 		return retcode.NewError(e.MysqlERR, "insert dish flavor failed")
 	}
 	return nil
@@ -31,8 +34,9 @@ func (d *DishFlavorDao) InsertBatch(ctx context.Context, flavor []model.DishFlav
 
 func (d *DishFlavorDao) DeleteByDishId(ctx context.Context, dishId uint64) error {
 	// 根据dishId删除对应的口味数据
-	err := d.db.Where("dish_id = ?", dishId).Delete(&model.DishFlavor{}).Error
+	err := d.db.WithContext(ctx).Where("dish_id = ?", dishId).Delete(&model.DishFlavor{}).Error
 	if err != nil {
+		global.Log.ErrContext(ctx, "DishFlavorDao.DeleteByDishId dish flavor failed, err: %v", err)
 		return retcode.NewError(e.MysqlERR, "delete dish flavor failed")
 	}
 	return nil
