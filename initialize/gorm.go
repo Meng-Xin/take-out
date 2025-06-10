@@ -3,7 +3,6 @@ package initialize
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
-	"golang.org/x/time/rate"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -47,8 +46,6 @@ func InitDatabase(dsn string) *gorm.DB {
 
 	// 慢日志中间件
 	SlowQueryLog(db)
-	// 限流器中间件
-	GormRateLimiter(db, rate.NewLimiter(500, 1000))
 
 	return db
 }
@@ -70,22 +67,8 @@ func SlowQueryLog(db *gorm.DB) {
 			duration := now.Sub(start.(time.Time))
 			// 一般认为 200 Ms 为Sql慢查询
 			if duration > time.Millisecond*200 {
-				global.Log.Error("慢查询", "SQL:", d.Statement.SQL.String())
+				global.Log.ErrContext(d.Statement.Context, "慢查询", "SQL:", d.Statement.SQL.String())
 			}
-		}
-	})
-	if err != nil {
-		panic(err)
-	}
-}
-
-// GormRateLimiter Gorm限流器 此限流器不能终止GORM查询链。
-func GormRateLimiter(db *gorm.DB, r *rate.Limiter) {
-	err := db.Callback().Query().Before("*").Register("RateLimitGormMiddleware", func(d *gorm.DB) {
-		if !r.Allow() {
-			d.AddError(GormToManyRequestError)
-			global.Log.Error(GormToManyRequestError.Error())
-			return
 		}
 	})
 	if err != nil {
