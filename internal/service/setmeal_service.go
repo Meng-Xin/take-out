@@ -32,7 +32,7 @@ type SetMealServiceImpl struct {
 
 func (s *SetMealServiceImpl) Delete(ctx context.Context, ids string) error {
 	idStrList := strings.Split(ids, ",")
-	setMealIdList := make([]uint64, 0)
+	setMealIdList := make([]uint64, len(idStrList))
 	for i, id := range idStrList {
 		setMealIdList[i] = cast.ToUint64(id)
 	}
